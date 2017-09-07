@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SourceFileCollection xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Profile>Reach</Profile>
+  <Platform>DesktopGL</Platform>
+  <Config />
+  <SourceFiles>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/MarioSpriteSheet.png</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/BackGroundObject.png</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/Ground-C.png</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/Ground-OW.png</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/Ground-UW.png</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/Ground-W.png</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/UnbreakableBrick-C.png</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/UnbreakableBrick-OW.png</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/UnbreakableBrick-UW.png</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/UnbreakableBrick-W.png</File>
+  </SourceFiles>
+</SourceFileCollection>
