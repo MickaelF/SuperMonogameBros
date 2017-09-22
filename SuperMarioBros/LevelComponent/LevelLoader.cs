@@ -36,7 +36,7 @@ namespace SuperMarioBros.LevelComponent
         Dictionary<ObjectType, List<Rectangle>> mMapDictionary;
         private List<DrawableObstacle> _mObstacles;
 
-        public LevelLoader(string filePath = "C:\\Users\\Mickael\\Desktop\\C#\\Mario\\Mario!\\Mario!\\Content\\Map\\1-1.tmx")
+        public LevelLoader(string filePath = "C:\\Users\\Mickael\\Desktop\\SuperMarioBros\\SuperMarioBros\\Content\\Maps\\1-1.tmx")
         {
             mFilePath = filePath;
             mFileParser = new TMXParser(mFilePath);
@@ -190,16 +190,28 @@ namespace SuperMarioBros.LevelComponent
             mMarioStartPosition = new Vector2(mMapDictionary[ObjectType.PlayerStartPoint][0].X, mMapDictionary[ObjectType.PlayerStartPoint][0].Y);
             foreach (Rectangle rect in mMapDictionary[ObjectType.QuestionMarkBricks])
             {
-                InteractiveBlock block = new InteractiveBlock((int)mLevelContext, 0, rect);
-                block.mSpriteSheet = mTextures[(int)ObjectType.QuestionMarkBricks];
-                mObstacles.Add(block);
+                int posX = rect.Left;
+                while (posX < rect.Right)
+                {
+                    Rectangle rectPos = new Rectangle(posX, rect.Top, 16, 16);
+                    InteractiveBlock block = new InteractiveBlock((int)mLevelContext, 0, rectPos);
+                    block.mSpriteSheet = mTextures[(int)ObjectType.BreakableBricks];
+                    mObstacles.Add(block);
+                    posX += 16;
+                }
             }
 
             foreach (Rectangle rect in mMapDictionary[ObjectType.BreakableBricks])
             {
-                InteractiveBlock block = new InteractiveBlock((int)mLevelContext, 1, rect);
-                block.mSpriteSheet = mTextures[(int)ObjectType.BreakableBricks];
-                mObstacles.Add(block);
+                int posX = rect.Left;
+                while(posX < rect.Right)
+                {
+                    Rectangle rectPos = new Rectangle(posX, rect.Top, 16, 16);
+                    InteractiveBlock block = new InteractiveBlock((int)mLevelContext, 1, rectPos);
+                    block.mSpriteSheet = mTextures[(int)ObjectType.BreakableBricks];
+                    mObstacles.Add(block);
+                    posX += 16;
+                }
             }
 
             foreach (Rectangle rect in mMapDictionary[ObjectType.Ground])
@@ -223,11 +235,11 @@ namespace SuperMarioBros.LevelComponent
             }
         }
 
-        public void Update()
+        public void Update(GameTime gameTime)
         {
             foreach (DrawableObstacle obst in mObstacles)
             {
-                obst.Update();
+                obst.Update(gameTime);
             }
         }
 

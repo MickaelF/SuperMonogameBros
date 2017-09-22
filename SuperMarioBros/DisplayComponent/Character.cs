@@ -11,17 +11,21 @@ namespace SuperMarioBros.DisplayComponent
 
         public Speed mVerticalSpeed;
         public Speed mHorizontalSpeed;
+
+        protected Vector2 mMovementInPixel;
+        
         private bool _mIsFalling;
 
         public Character ()
         {
-
+            mMovementInPixel = new Vector2(0.0f, 0.0f);
         }
 
-        public new void Update()
+        public override void Update(GameTime gameTime)
         {
-            base.Update();
-            mPosition = new Vector2(mPosition.X + mMoveVector.X * mHorizontalSpeed.mCurrentSpeed, mPosition.Y + mMoveVector.Y * mHorizontalSpeed.mCurrentSpeed);
+            base.Update(gameTime);
+
+            mPosition = new Vector2(mPosition.X + mMoveVector.X * mMovementInPixel.X, mPosition.Y + mMoveVector.Y * mMovementInPixel.Y);
         }
 
         public void InverseInX()

@@ -17,7 +17,10 @@ namespace SuperMarioBros
 
         LevelLoader mLevelLoader;
         Mario mPlayer;
-        
+        Camera mCamera;
+        Texture2D mBackground;
+        Color mClearColor;
+
         public MainLoop()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -35,6 +38,8 @@ namespace SuperMarioBros
             // TODO: Add your initialization logic here
             mLevelLoader = new LevelLoader();
             mPlayer = new Mario();
+            mCamera = new Camera();
+            mClearColor = new Color(107, 140, 255);
             base.Initialize();
         }
 
@@ -49,6 +54,9 @@ namespace SuperMarioBros
             mLevelLoader.LoadContent(Content, GraphicsDevice);
             mPlayer.LoadContent(Content, GraphicsDevice);
             mPlayer.mPosition = mLevelLoader.mMarioStartPosition;
+            mCamera.mViewportSize = new Point(256, 256);
+            mCamera.CenterOn(mCamera.mViewportCenter);
+            mBackground = Content.Load<Texture2D>("Maps/World1-1");
 
             // TODO: use this.Content to load your game content here
         }
@@ -69,10 +77,12 @@ namespace SuperMarioBros
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            mLevelLoader.Update();
-            mPlayer.Update(mLevelLoader.mObstacles);
-            
-            // TODO: Add your update logic here
+            mLevelLoader.Update(gameTime);
+            mPlayer.Update(mLevelLoader.mObstacles, gameTime);
+            if(mPlayer.mPosition.X > mCamera.mCenter.X)
+            {
+                 mCamera.Move(new Vector2(mPlayer.mPosition.X - mCamera.mCenter.X, 0.0f));
+            }
 
             base.Update(gameTime);
         }
@@ -83,8 +93,9 @@ namespace SuperMarioBros
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-            spriteBatch.Begin(SpriteSortMode.BackToFront, null, SamplerState.PointWrap, null, null);
+            GraphicsDevice.Clear(mClearColor);
+            spriteBatch.Begin(SpriteSortMode.BackToFront, null, SamplerState.PointWrap, null, null, null, mCamera.mTranslationMatrix);
+            spriteBatch.Draw(mBackground, Vector2.Zero, Color.White);
             mLevelLoader.Draw(spriteBatch);
             mPlayer.Draw(spriteBatch);
             spriteBatch.End();

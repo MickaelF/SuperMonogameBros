@@ -20,8 +20,11 @@ namespace SuperMarioBros.DisplayComponent
             get => _mIndexDrawnSprite;
             set
             {
-                _mIndexDrawnSprite = value;
-                mDrawnRectangle = mAnimationStartArray[value];
+                if (value != _mIndexDrawnSprite)
+                {
+                    _mIndexDrawnSprite = value;
+                    mDrawnRectangle = mAnimationStartArray[value];
+                }
             }
         }
 
@@ -39,8 +42,7 @@ namespace SuperMarioBros.DisplayComponent
         protected int mCurrentAnimationStepDrawn;
         //! Array containing the start of different animation on the sprite sheet.
         private Rectangle[] _mAnimationStartArray;
-        //! Timer clock for animations.
-        protected Stopwatch mTimer;
+
         //! Time to surpass for the animation to trigger.
         private float _mNextAnimationTimeLimit;
         //! Sprite sheet texture
@@ -51,12 +53,13 @@ namespace SuperMarioBros.DisplayComponent
         private float _mScalling;
         //! Sprite size in pixels.
         private Point _mSpriteSize;
+        //! Milliseconds pass since last animation
+        protected int mMilliseconds;
 
         public DrawableObstacle()
         {
-            mTimer = new Stopwatch();
-            mTimer.Start();
             mScalling = 1.0f;
+            mMilliseconds = 0;
         }
 
         public void SetTimeBetweenAnimation(float time)
@@ -64,11 +67,12 @@ namespace SuperMarioBros.DisplayComponent
             mNextAnimationTimeLimit = time;
         }
         
-        public virtual void Update()
+        public virtual void Update(GameTime gameTime)
         {
-            if (mIsAnimated && mTimer.ElapsedMilliseconds > mNextAnimationTimeLimit)
+            mMilliseconds += gameTime.ElapsedGameTime.Milliseconds;
+            if (mIsAnimated && mSpriteAnimationStepNumber[mIndexDrawnSprite] > 1 && mMilliseconds > mNextAnimationTimeLimit)
             {
-                mTimer.Restart();
+                mMilliseconds = 0;
                 mCurrentAnimationStepDrawn++; 
                 if(mCurrentAnimationStepDrawn >= mSpriteAnimationStepNumber[mIndexDrawnSprite])
                 {

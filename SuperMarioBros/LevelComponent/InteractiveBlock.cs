@@ -53,13 +53,15 @@ namespace SuperMarioBros.LevelComponent
             }
 
             mIndexDrawnSprite = 0;
+            mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
         }
 
-        public override void Update()
+        public override void Update(GameTime gameTime)
         {
-            if (mIsAnimated && mTimer.ElapsedMilliseconds > mNextAnimationTimeLimit)
+            mMilliseconds += gameTime.ElapsedGameTime.Milliseconds;
+            if (mIsAnimated && mMilliseconds > mNextAnimationTimeLimit)
             {
-                mTimer.Restart();
+                mMilliseconds = 0;
                 if (mStayAtZeroStepAnimation >= 4 || mCurrentAnimationStepDrawn != 0)
                 {
                     mStayAtZeroStepAnimation = 0;

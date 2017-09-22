@@ -8,8 +8,9 @@ namespace SuperMarioBros.DisplayComponent
 {
     public class Mario : Character
     {
-        private bool mJumpPressed;
-        public Camera mCamera;
+        private bool mDoJump;
+        private KeyboardState mOldKeyboardState;
+        private Vector2 mLastGoodPosition;
         enum AnimationName
         {
             IDLE,
@@ -23,13 +24,16 @@ namespace SuperMarioBros.DisplayComponent
         public Mario()
         {
             mIsAnimated = true;
-            mCamera = new Camera();
-            mJumpPressed = false; 
+            mDoJump = false;
 
             mSpriteSize = new Point(16, 32);
-            mHorizontalSpeed = new Speed(10);
-            mHorizontalSpeed.mAcceleration = 1;
-            mVerticalSpeed = new Speed(10);
+            mHorizontalSpeed = new Speed(100);
+            mHorizontalSpeed.mAcceleration = 10;
+            mVerticalSpeed = new Speed(300);
+            mVerticalSpeed.mAcceleration = 10;
+            mVerticalSpeed.mNegativeSpeed = true;
+
+            mSize = new Vector2(16, 32);
 
             mSpriteAnimationStepNumber = new int[(int)AnimationName.NBLISTS];
             mSpriteAnimationStepNumber[(int)AnimationName.IDLE] = 1;
@@ -53,32 +57,134 @@ namespace SuperMarioBros.DisplayComponent
             mIndexDrawnSprite = (int)AnimationName.JUMP;
         }
 
-        public new void Update(List<DrawableObstacle> arrayObstacle)
+        public void Update(List<DrawableObstacle> arrayObstacle, GameTime gameTime)
         {
             CheckInput();
+            if (gameTime.ElapsedGameTime.Milliseconds != 0)
+            {
+                mMovementInPixel = new Vector2(mHorizontalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f, mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+            }
             SetTimeBetweenAnimation((50 * mHorizontalSpeed.mSpeedLimit) / mHorizontalSpeed.mCurrentSpeed);
             CollisionDetection(arrayObstacle);
-            base.Update();
+            if (mDoJump)
+            {
+                mDoJump = false;
+                mVerticalSpeed.SpeedToMax();
+                mMovementInPixel.Y = mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+                mIsFalling = true;
+            }
+            if (mIsFalling)
+            {
+                mVerticalSpeed.SlowDown();
+                mMoveVector = new Vector2(mMoveVector.X, -1.0f);
+                mIndexDrawnSprite = (int)AnimationName.JUMP;
+                if(mPosition.Y > 400.0f)
+                {
+                    mPosition = mLastGoodPosition;
+                }
+            }
+            else if (mVerticalSpeed.mCurrentSpeed != 0.0f)
+            {
+                mVerticalSpeed.Stop();
+                mMovementInPixel.Y = 0.0f;
+                mMoveVector = new Vector2(mMoveVector.X, 0.0f);
+            }
+            else
+            {
+                mLastGoodPosition = mPosition;
+            }
+            base.Update(gameTime);
         }
         
         public void CollisionDetection(List<DrawableObstacle> arrayObstacle)
         {
-            bool noIntersection = true;
+            // On crée trois rayons qui partent du personnage.
+            float xPos = mPosition.X;
+            float bottomTestXPos = mPosition.X + mSize.X;
+
+            if(mMoveVector.X == 1.0f)
+            {
+                xPos += mSize.X;
+                bottomTestXPos -= mSize.X;
+            }
+
+            Ray2D[] rayForward = new Ray2D[3];
+            rayForward[0] = new Ray2D(new Vector2(xPos, mPosition.Y), new Vector2(mMoveVector.X, 0.0f));
+            rayForward[1] = new Ray2D(new Vector2(xPos, mPosition.Y + mSize.Y * 0.5f), new Vector2(mMoveVector.X, 0.0f));
+            rayForward[2] = new Ray2D(new Vector2(xPos, mPosition.Y + mSize.Y), new Vector2(mMoveVector.X, 0.0f));
+
+            Ray2D[] rayVerticalTests = new Ray2D[3];
+            float verticalPosition = (mVerticalSpeed.mCurrentSpeed > 0) ? mPosition.Y : mPosition.Y + mSize.Y;
+            rayVerticalTests[0] = new Ray2D(new Vector2(mPosition.X, verticalPosition), new Vector2(0.0f, 1.0f));
+            rayVerticalTests[1] = new Ray2D(new Vector2(mPosition.X + mSize.X, verticalPosition), new Vector2(0.0f, 1.0f));
+            rayVerticalTests[2] = new Ray2D(new Vector2(mPosition.X + mSize.X * 0.5f, verticalPosition), new Vector2(0.0f, 1.0f));
+
+            mIsFalling = true;
             foreach (Obstacle obst in arrayObstacle)
             {
-                if ((mPosition - obst.mPosition).Length() < 2000.0f)
+                for (int i = 0; i < rayForward.Length; ++i)
                 {
-                    if (Intersect(obst))
-                    {
-                        noIntersection = false;
-                        mMoveVector = new Vector2(0.0f, 0.0f);
-                    }
+                    obst.Intersect(ref rayForward[i]);
+                }
+
+                for (int i = 0; i < rayVerticalTests.Length; ++i)
+                {
+                    obst.Intersect(ref rayVerticalTests[i]);
                 }
             }
-            if(noIntersection)
+
+            float nextHorizontalMovement = System.Math.Abs(mMovementInPixel.X) + 1;
+            List<Ray2D> rayUsed = new List<Ray2D>();
+            foreach (Ray2D r in rayForward)
             {
-                mIsFalling = true;
+                if (r.IsIntersectionFound() && !float.IsNaN(r.mIntersectionDistance))
+                {
+                    rayUsed.Add(r);
+                }
             }
+            
+            if (rayUsed.Count > 0)
+            {
+                float lowestDistanceCollision = rayUsed[0].mIntersectionDistance;
+                for (int i = 1; i < rayUsed.Count; ++i)
+                {
+                    lowestDistanceCollision = MathHelper.Min(lowestDistanceCollision, rayUsed[i].mIntersectionDistance);
+                }
+                if (lowestDistanceCollision == 0.0f)
+                {
+                    mMovementInPixel.X = 0;
+                }
+                else if (lowestDistanceCollision < System.Math.Abs(mMovementInPixel.X))
+                {
+                    mMovementInPixel.X = System.Math.Sign(mMovementInPixel.X) * lowestDistanceCollision;
+                }
+            }
+
+            rayUsed.Clear();
+            foreach (Ray2D r in rayVerticalTests)
+            {
+                if (r.IsIntersectionFound() && !float.IsNaN(r.mIntersectionDistance))
+                {
+                    rayUsed.Add(r);
+                }
+            }
+            if(rayUsed.Count > 0)
+            {
+                float lowestDistanceCollision = rayUsed[0].mIntersectionDistance;
+                for (int i = 1; i < rayUsed.Count; ++i)
+                {
+                    lowestDistanceCollision = MathHelper.Min(lowestDistanceCollision, rayUsed[i].mIntersectionDistance);
+                }
+                if (lowestDistanceCollision == 0.0f)
+                {
+                        mIsFalling = false;
+                }
+                else if (lowestDistanceCollision < System.Math.Abs(mMovementInPixel.Y))
+                {
+                    mMovementInPixel.Y = System.Math.Sign(mMovementInPixel.Y) * lowestDistanceCollision;
+                }
+            }
+            
         }
 
         public void CheckInput()
@@ -115,7 +221,7 @@ namespace SuperMarioBros.DisplayComponent
                 {
                     mMoveVector = new Vector2(1.0f, mMoveVector.Y);
                 }
-                else if (mMoveVector.X == -1.0f)
+                if (mMoveVector.X == -1.0f)
                 {
                     mHorizontalSpeed.SlowDown();
                     if (mHorizontalSpeed.mCurrentSpeed <= 0.0f)
@@ -149,21 +255,24 @@ namespace SuperMarioBros.DisplayComponent
                 // Run
                 mHorizontalSpeed.DoubleSpeedLimit();
             }
-            /*else if (state.IsKeyUp(Keys.LeftShift))
+            else if(state.IsKeyUp(Keys.LeftShift) && mOldKeyboardState.IsKeyDown(Keys.LeftShift))
             {
+                // Stop Running 
                 mHorizontalSpeed.SpeedLimitToNormal();
-            }*/
+            }
+
             if (state.IsKeyDown(Keys.Space))
             {
-                if (!mIsFalling)
+                if (!mIsFalling && mOldKeyboardState.IsKeyUp(Keys.Space))
                 {
-                    mJumpPressed = true;
+                    mDoJump = true;
                 }
             }
             if (state.IsKeyDown(Keys.S) || state.IsKeyDown(Keys.Down))
             {
                 mIndexDrawnSprite = (int)AnimationName.CROUCH;
             }
+            mOldKeyboardState = state;
         }
 
     }

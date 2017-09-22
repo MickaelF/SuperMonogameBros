@@ -25,3 +25,4 @@ C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debu
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Tiles\UnbreakableBrick-OW.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Tiles\UnbreakableBrick-UW.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Tiles\UnbreakableBrick-W.xnb
+C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Maps\World1-1.xnb

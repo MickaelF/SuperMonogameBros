@@ -11,11 +11,13 @@ namespace SuperMarioBros.PhysicComponent
         public float mSpeedLimit { get => _mSpeedLimit; set => _mSpeedLimit = value; }
         public float mAcceleration { get => _mAcceleration; set => _mAcceleration = value; }
         public float mCurrentSpeed { get => _mCurrentSpeed; private set => _mCurrentSpeed = value; }
+        public bool mNegativeSpeed;
 
         public Speed(float speedLimit)
         {
             mCurrentSpeed = 0.0f;
             mSpeedLimit = speedLimit;
+            mNegativeSpeed = false;
         }
         
         public void SpeedUp()
@@ -25,7 +27,7 @@ namespace SuperMarioBros.PhysicComponent
 
         public void SlowDown()
         {
-            mCurrentSpeed = MathHelper.Clamp(mCurrentSpeed - mAcceleration, 0, mSpeedLimit);
+            mCurrentSpeed = MathHelper.Clamp(mCurrentSpeed - mAcceleration, (mNegativeSpeed) ? -mSpeedLimit : 0, mSpeedLimit);
         }
 
         public void SpeedToMax()
