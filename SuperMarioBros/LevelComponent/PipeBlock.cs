@@ -17,25 +17,21 @@ namespace SuperMarioBros.LevelComponent
             mSpriteAnimationStepNumber = new int[1];
             mAnimationStartArray = new Rectangle[2];
 
-            Point positionSprite = Point.Zero;
+            Point positionSprite = new Point(16, 32);
             switch (contextLevel)
             {
                 case 0: // Overworld
-                    positionSprite.Y = 128;
                     mAnimationStartArray[0] = new Rectangle(positionSprite, mSpriteSize);
-                    positionSprite.Y = 128 + 16;
+                    positionSprite.Y += 16;
                     mAnimationStartArray[1] = new Rectangle(positionSprite, mSpriteSize);
                     break;
                 case 1: // Underworld
-                    positionSprite.Y = 160;
                     mAnimationStartArray[0] = new Rectangle(positionSprite, mSpriteSize);
                     break;
                 case 2: // Castle
-                    positionSprite.Y = 64;
                     mAnimationStartArray[0] = new Rectangle(positionSprite, mSpriteSize);
                     break;
                 case 3: // Underwater
-                    positionSprite.Y = 96;
                     mAnimationStartArray[0] = new Rectangle(positionSprite, mSpriteSize);
                     break;
             }
@@ -46,7 +42,7 @@ namespace SuperMarioBros.LevelComponent
             Vector2 drawnPosition = mPosition;
             spriteBatch.Draw(mSpriteSheet, drawnPosition, mAnimationStartArray[0], Color.White, mRotation, new Vector2(0.0f, 0.0f), mScalling, SpriteEffects.None, 0);
            
-            while (drawnPosition.Y < mPipeRectangle.Top + mPipeRectangle.Height)
+            while (drawnPosition.Y < mPipeRectangle.Top + mPipeRectangle.Height - 16)
             {
                 drawnPosition.Y += 16;
                 spriteBatch.Draw(mSpriteSheet, drawnPosition, mAnimationStartArray[1], Color.White, mRotation, new Vector2(0.0f, 0.0f), mScalling, SpriteEffects.None, 0);

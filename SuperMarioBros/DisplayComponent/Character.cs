@@ -12,7 +12,7 @@ namespace SuperMarioBros.DisplayComponent
         public Speed mVerticalSpeed;
         public Speed mHorizontalSpeed;
 
-        protected Vector2 mMovementInPixel;
+        public Vector2 mMovementInPixel;
         
         private bool _mIsFalling;
 

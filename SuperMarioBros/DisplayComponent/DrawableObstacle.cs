@@ -27,13 +27,14 @@ namespace SuperMarioBros.DisplayComponent
                 }
             }
         }
+        
 
         //! If the object has an animation.
         private bool _mIsAnimated;
         //! If the object is drawn reversed.
         private bool _mIsHorizontalyFlipped;
         //! Currently drawn rectangle in the spite sheet.
-        protected Rectangle mDrawnRectangle;
+        public Rectangle mDrawnRectangle;
         //! Index of the currently drawn sprite animation.
         private int _mIndexDrawnSprite;
         //! Number of animation step in each sprite animation contained in the spite sheet.
@@ -55,11 +56,14 @@ namespace SuperMarioBros.DisplayComponent
         private Point _mSpriteSize;
         //! Milliseconds pass since last animation
         protected int mMilliseconds;
+        //! If the block is meant to be displayed, true. False otherwise.
+        public bool mIsDisplayed;
 
         public DrawableObstacle()
         {
             mScalling = 1.0f;
             mMilliseconds = 0;
+            mIsDisplayed = true;
         }
 
         public void SetTimeBetweenAnimation(float time)
@@ -94,21 +98,24 @@ namespace SuperMarioBros.DisplayComponent
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            if (mSpriteSheet != null)
+            if (mIsDisplayed)
             {
-                if (mAnimationStartArray.Length < 1)
+                if (mSpriteSheet != null)
                 {
-                    spriteBatch.Draw(mSpriteSheet, mPosition, Color.White);
-                }
-                else
-                {
-                    if (mIsHorizontalyFlipped)
+                    if (mAnimationStartArray.Length < 1)
                     {
-                        spriteBatch.Draw(mSpriteSheet, mPosition, mDrawnRectangle, Color.White, mRotation, Vector2.Zero, mScalling, SpriteEffects.FlipHorizontally, 0);
+                        spriteBatch.Draw(mSpriteSheet, mPosition, Color.White);
                     }
                     else
                     {
-                        spriteBatch.Draw(mSpriteSheet, mPosition, mDrawnRectangle, Color.White, mRotation, Vector2.Zero, mScalling, SpriteEffects.None, 0);
+                        if (mIsHorizontalyFlipped)
+                        {
+                            spriteBatch.Draw(mSpriteSheet, mPosition, mDrawnRectangle, Color.White, mRotation, Vector2.Zero, mScalling, SpriteEffects.FlipHorizontally, 0);
+                        }
+                        else
+                        {
+                            spriteBatch.Draw(mSpriteSheet, mPosition, mDrawnRectangle, Color.White, mRotation, Vector2.Zero, mScalling, SpriteEffects.None, 0);
+                        }
                     }
                 }
             }

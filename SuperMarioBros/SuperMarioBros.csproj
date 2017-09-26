@@ -46,6 +46,8 @@
     <Compile Include="DisplayComponent\Character.cs" />
     <Compile Include="DisplayComponent\DrawableObstacle.cs" />
     <Compile Include="DisplayComponent\Mario.cs" />
+    <Compile Include="LevelComponent\BackgroundSprites.cs" />
+    <Compile Include="LevelComponent\Items.cs" />
     <Compile Include="LevelComponent\PipeBlock.cs" />
     <Compile Include="LevelComponent\TilableBlock.cs" />
     <Compile Include="LevelComponent\InteractiveBlock.cs" />

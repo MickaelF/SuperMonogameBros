@@ -16,6 +16,8 @@ namespace SuperMarioBros.LevelComponent
         public List<Tile> mTileList;
         public int[][] mTilePosition;
         public int[][] mPipeTilePosition;
+        public int[][] mBackgroundTilePosition;
+        public int[][] mBonusTilePosition;
 
         public string mContextName { get => _mContextName; private set => _mContextName = value; }
 
@@ -46,10 +48,14 @@ namespace SuperMarioBros.LevelComponent
                             mTileSize = new Point(widthTile, heightTile);
                             mTilePosition = new int[mLevelSizeInTile.Y][];
                             mPipeTilePosition = new int[mLevelSizeInTile.Y][];
+                            mBackgroundTilePosition = new int[mLevelSizeInTile.Y][];
+                            mBonusTilePosition = new int[mLevelSizeInTile.Y][];
                             for (int i = 0; i < mTilePosition.Length; i++)
                             {
                                 mTilePosition[i] = new int[mLevelSizeInTile.X];
                                 mPipeTilePosition[i] = new int[mLevelSizeInTile.X];
+                                mBackgroundTilePosition[i] = new int[mLevelSizeInTile.X];
+                                mBonusTilePosition[i] = new int[mLevelSizeInTile.X];
                             }
                             mContextName = mReader.GetAttribute("context");
                         }
@@ -78,13 +84,21 @@ namespace SuperMarioBros.LevelComponent
                             string[] lineArray = strArray[i].Split(',').Where(x => !string.IsNullOrEmpty(x)).ToArray();
                             for (int j = 0; j < lineArray.Length; j++)
                             {
-                                if (currentElement != "Pipe")
+                                if (currentElement == "Pipe")
                                 {
-                                    mTilePosition[i][j] += int.Parse(lineArray[j]);
+                                    mPipeTilePosition[i][j] += int.Parse(lineArray[j]);
+                                }
+                                else if (currentElement.Substring(0, 2) == "BG")
+                                {
+                                    mBackgroundTilePosition[i][j] += int.Parse(lineArray[j]);
+                                }
+                                else if (currentElement.Substring(0, 5) == "Bonus")
+                                {
+                                    mBonusTilePosition[i][j] += int.Parse(lineArray[j]);
                                 }
                                 else
                                 {
-                                    mPipeTilePosition[i][j] += int.Parse(lineArray[j]);
+                                    mTilePosition[i][j] += int.Parse(lineArray[j]);
                                 }
                             }
                         }
@@ -102,7 +116,7 @@ namespace SuperMarioBros.LevelComponent
                     return tile;
                 }
             }
-            return new Tile(-1, -1, -1, "");
+            return new Tile(-1, -1, -1, "j");
         }
 
         public Dictionary<int, string> IdNameTileDictionnary()

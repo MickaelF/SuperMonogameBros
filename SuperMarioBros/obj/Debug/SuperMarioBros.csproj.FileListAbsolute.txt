@@ -16,7 +16,6 @@ C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debu
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\MonoGame.Framework.dll
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\obj\Debug\SuperMarioBros.exe
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\obj\Debug\SuperMarioBros.pdb
-C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\BackGroundObject.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Tiles\Ground-C.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Tiles\Ground-OW.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Tiles\Ground-UW.xnb
@@ -26,3 +25,4 @@ C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debu
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Tiles\UnbreakableBrick-UW.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Tiles\UnbreakableBrick-W.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Maps\World1-1.xnb
+C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\UnTilableObjects-OW1.xnb

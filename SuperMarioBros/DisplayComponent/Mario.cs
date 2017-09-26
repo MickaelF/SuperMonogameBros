@@ -115,11 +115,11 @@ namespace SuperMarioBros.DisplayComponent
 
             Ray2D[] rayVerticalTests = new Ray2D[3];
             float verticalPosition = (mVerticalSpeed.mCurrentSpeed > 0) ? mPosition.Y : mPosition.Y + mSize.Y;
-            rayVerticalTests[0] = new Ray2D(new Vector2(mPosition.X, verticalPosition), new Vector2(0.0f, 1.0f));
-            rayVerticalTests[1] = new Ray2D(new Vector2(mPosition.X + mSize.X, verticalPosition), new Vector2(0.0f, 1.0f));
-            rayVerticalTests[2] = new Ray2D(new Vector2(mPosition.X + mSize.X * 0.5f, verticalPosition), new Vector2(0.0f, 1.0f));
+            float rayDirection = (mVerticalSpeed.mCurrentSpeed > 0) ? -1.0f : 1.0f;
+            rayVerticalTests[0] = new Ray2D(new Vector2(mPosition.X, verticalPosition), new Vector2(0.0f, rayDirection));
+            rayVerticalTests[1] = new Ray2D(new Vector2(mPosition.X + mSize.X, verticalPosition), new Vector2(0.0f, rayDirection));
+            rayVerticalTests[2] = new Ray2D(new Vector2(mPosition.X + mSize.X * 0.5f, verticalPosition), new Vector2(0.0f, rayDirection));
 
-            mIsFalling = true;
             foreach (Obstacle obst in arrayObstacle)
             {
                 for (int i = 0; i < rayForward.Length; ++i)
@@ -133,6 +133,7 @@ namespace SuperMarioBros.DisplayComponent
                 }
             }
 
+            // Collision mouvement horizontal
             float nextHorizontalMovement = System.Math.Abs(mMovementInPixel.X) + 1;
             List<Ray2D> rayUsed = new List<Ray2D>();
             foreach (Ray2D r in rayForward)
@@ -160,6 +161,8 @@ namespace SuperMarioBros.DisplayComponent
                 }
             }
 
+            // Collision mouvement vertical
+            mIsFalling = true;
             rayUsed.Clear();
             foreach (Ray2D r in rayVerticalTests)
             {
@@ -171,13 +174,22 @@ namespace SuperMarioBros.DisplayComponent
             if(rayUsed.Count > 0)
             {
                 float lowestDistanceCollision = rayUsed[0].mIntersectionDistance;
+                int idObstacleCollided = rayUsed[0].mIdObstacleIntersected;
                 for (int i = 1; i < rayUsed.Count; ++i)
                 {
-                    lowestDistanceCollision = MathHelper.Min(lowestDistanceCollision, rayUsed[i].mIntersectionDistance);
+                    if(lowestDistanceCollision > rayUsed[i].mIntersectionDistance)
+                    {
+                        lowestDistanceCollision = rayUsed[i].mIntersectionDistance;
+                        idObstacleCollided = rayUsed[i].mIdObstacleIntersected;
+                    }
                 }
                 if (lowestDistanceCollision == 0.0f)
                 {
-                        mIsFalling = false;
+                    mIsFalling = false;
+                    if (mVerticalSpeed.mCurrentSpeed > 0.0f)
+                    {
+                        arrayObstacle[idObstacleCollided - 1].CollisionEffect();
+                    }
                 }
                 else if (lowestDistanceCollision < System.Math.Abs(mMovementInPixel.Y))
                 {

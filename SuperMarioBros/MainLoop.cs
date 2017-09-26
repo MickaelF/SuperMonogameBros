@@ -18,7 +18,6 @@ namespace SuperMarioBros
         LevelLoader mLevelLoader;
         Mario mPlayer;
         Camera mCamera;
-        Texture2D mBackground;
         Color mClearColor;
 
         public MainLoop()
@@ -56,9 +55,7 @@ namespace SuperMarioBros
             mPlayer.mPosition = mLevelLoader.mMarioStartPosition;
             mCamera.mViewportSize = new Point(256, 256);
             mCamera.CenterOn(mCamera.mViewportCenter);
-            mBackground = Content.Load<Texture2D>("Maps/World1-1");
-
-            // TODO: use this.Content to load your game content here
+            
         }
 
         /// <summary>
@@ -95,7 +92,6 @@ namespace SuperMarioBros
         {
             GraphicsDevice.Clear(mClearColor);
             spriteBatch.Begin(SpriteSortMode.BackToFront, null, SamplerState.PointWrap, null, null, null, mCamera.mTranslationMatrix);
-            spriteBatch.Draw(mBackground, Vector2.Zero, Color.White);
             mLevelLoader.Draw(spriteBatch);
             mPlayer.Draw(spriteBatch);
             spriteBatch.End();
