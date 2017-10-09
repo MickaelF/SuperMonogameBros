@@ -5,37 +5,37 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 namespace SuperMarioBros.LevelComponent
 {
-    public class InteractiveBlock : Character
+    public class InteractiveBlock : MovableObstacle
     {
         private int mStayAtZeroStepAnimation;
         private bool mIsCollided;
         public ITEM_TYPE mContent;
         private bool mIsAQuestionMarkBlock;
+        private bool mCanCreateBonus;
         private Rectangle mEmptyBlockRectangleDrawing;
         private Vector2 mTopLeftOrigin;
-
-        private Character[] mParticlesBreakableBrick;
-        private bool mIsDestroyed;
-
-
+        private MovableObstacle mCoins;
+                
         public enum ITEM_TYPE
         {
             NONE,
             COIN,
             ONE_UP,
             STAR,
-            RED_MUSHROOM
+            RED_MUSHROOM, 
+            FLOWER
         }
 
         public InteractiveBlock(int contextLevel, bool questionMarkBlock, Rectangle position, ITEM_TYPE contains = ITEM_TYPE.NONE)
         {
-            mIsDestroyed = false;
+            mCanCreateBonus = true;
             mStayAtZeroStepAnimation = 0;
             mContent = contains;
             mIsAQuestionMarkBlock = questionMarkBlock;
             mVerticalSpeed = new Speed(100);
             mVerticalSpeed.mAcceleration = 10;
-            mVerticalSpeed.mNegativeSpeed = true;
+            mVerticalSpeed.mAllowNegativeSpeed = true;
+            mMoveVector = new Vector2(0.0f, -1.0f);
             mIsCollided = false;
             mSpriteSize = new Point(16, 16);
             mPosition = new Vector2(position.Location.X, position.Location.Y);
@@ -118,99 +118,99 @@ namespace SuperMarioBros.LevelComponent
                     {
                         mMovementInPixel.Y = System.Math.Sign(mMovementInPixel.Y) * lengthLeft;
                     }
-                    if(lengthLeft == 0.0f)
+                    if (lengthLeft == 0.0f)
                     {
                         mIsFalling = false;
+                        mCanCreateBonus = true;
+                    }
+                }
+                if (mCanCreateBonus && mIsCollided)
+                {
+                    switch(mContent)
+                    {
+                        case ITEM_TYPE.ONE_UP:
+                            new MushroomBonus(true, mPosition, mSpriteSheet);
+                            break;
+                        case ITEM_TYPE.RED_MUSHROOM:
+                            new MushroomBonus(false, mPosition, mSpriteSheet);
+                            break;
+                        case ITEM_TYPE.FLOWER:
+                            new FlowerBonus(mPosition, mSpriteSheet);
+                            break;
+                        case ITEM_TYPE.COIN:
+                            mCoins = new MovableObstacle();
+                            mCoins.mIsAnimated = true;
+                            mCoins.mIsCollidable = false;
+                            mCoins.mSpriteSheet = mSpriteSheet;
+                            mCoins.mSize = new Vector2(16, 16);
+                            mCoins.mMoveVector = new Vector2(0.0f, -1.0f);
+                            mCoins.mPosition = mPosition;
+                            mCoins.mVerticalSpeed = new Speed(100);
+                            mCoins.mVerticalSpeed.mAcceleration = 20;
+                            mCoins.mVerticalSpeed.SpeedToMax();
+                            mCoins.mVerticalSpeed.mAllowNegativeSpeed = true;
+
+                            mCoins.mSpriteAnimationStepNumber = new int[1];
+                            mCoins.mSpriteAnimationStepNumber[0] = 3;
+                            mCoins.SetTimeBetweenAnimation(50.0f);
+                            mCoins.mDrawnRectangle = new Rectangle(new Point(48, 114), mSpriteSize);
+                            mCoins.mAnimationStartArray = new Rectangle[1];
+                            mCoins.mAnimationStartArray[0] = mDrawnRectangle;
+                            break;
+                        case ITEM_TYPE.NONE:
+                            mIsCollided = false;
+                            break;
                     }
                 }
                 base.Update(gameTime);
-            }
-            else if (mIsDestroyed)
-            {
-                if (gameTime.ElapsedGameTime.Milliseconds != 0)
-                {
-                    foreach(Character c in mParticlesBreakableBrick)
-                    {
-                        c.mMovementInPixel = new Vector2(0.50f, c.mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
-                        c.mVerticalSpeed.SlowDown();
-                        c.mRotation += 1.0f;
-                        c.Update(gameTime);
-                    }
-                }           
             }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if (mIsDestroyed)
-            {
-                foreach(DrawableObstacle draw in mParticlesBreakableBrick)
-                {
-                    draw.Draw(spriteBatch);
-                }
-            }
-            else
-            {
-                base.Draw(spriteBatch);
-            }
+            base.Draw(spriteBatch);
         }
 
-        public override void CollisionEffect()
+        public override void CollisionEffect(Obstacle obst, CollisionWay way)
         {
-            if (!mIsCollided)
+            if (!mIsCollided && obst is Mario && way == CollisionWay.BELOW)
             {
                 mIsAnimated = false;
-                mDrawnRectangle = mEmptyBlockRectangleDrawing;
                 mIsCollided = true;
-                if (mContent == ITEM_TYPE.NONE)
+                if (mContent == ITEM_TYPE.NONE && (obst as Mario).mMarioState != Mario.MarioState.SMALL)
                 {
-                    // L'objet est détruit.
-                    mIsDestroyed = true;
                     // On ne peut plus se prendre l'objet.
-                    mIsCollidable = false; 
-                    mParticlesBreakableBrick = new Character[4];
-                    for (int i = 0; i < 4; ++i)
-                    { 
-                        mParticlesBreakableBrick[i] = new Character();
-                        mParticlesBreakableBrick[i].mPosition = mPosition;
-                        mParticlesBreakableBrick[i].mSpriteSheet = mSpriteSheet;
-                        mParticlesBreakableBrick[i].mSpriteSize = new Point(16, 16);
-                        mParticlesBreakableBrick[i].mSpriteAnimationStepNumber = new int[1];
-                        mParticlesBreakableBrick[i].mSpriteAnimationStepNumber[0] = 1;
+                    mIsCollidable = false;
 
-                        mParticlesBreakableBrick[i].mAnimationStartArray = new Rectangle[1];
-                        if (i % 2 == 0)
-                        {
-                            mParticlesBreakableBrick[i].mDrawnRectangle = new Rectangle(new Point(32, 16), mParticlesBreakableBrick[i].mSpriteSize);
-                            mParticlesBreakableBrick[i].mVerticalSpeed = new Speed(100);
-                            mParticlesBreakableBrick[i].mMoveVector = new Vector2((i > 0) ?1.0f : -1.0f, -1.0f);
-                        }
-                        else
-                        {
-                            mParticlesBreakableBrick[i].mDrawnRectangle = new Rectangle(new Point(48, 16), mSpriteSize);
-                            mParticlesBreakableBrick[i].mVerticalSpeed = new Speed(200);
-                            mParticlesBreakableBrick[i].mMoveVector = new Vector2((i > 1) ? 1.0f : -1.0f, -1.0f);
-                        }
-                        mParticlesBreakableBrick[i].mVerticalSpeed.mNegativeSpeed = true;
-                        mParticlesBreakableBrick[i].mVerticalSpeed.SpeedToMax();
-                        mParticlesBreakableBrick[i].mVerticalSpeed.mAcceleration = 10;
-                    }
+                    new BreakableBrickDestroyAnimation(mPosition, mSpriteSheet);
+                    ObstacleAccessor.Instance.Remove(this);
                 }
                 else
                 {
                     mIsFalling = true;
-                    mMoveVector = new Vector2(0.0f, -1.0f);
                     mVerticalSpeed.SpeedToMax();
-                }
-                switch (mContent)
-                {
-                    case ITEM_TYPE.ONE_UP:
-                        break;
-                    case ITEM_TYPE.RED_MUSHROOM:
-                        break;
-                    case ITEM_TYPE.COIN:
-                        break;
-                }
+                    mCanCreateBonus = false;
+
+                    if(mContent != ITEM_TYPE.NONE)
+                    {
+                        mDrawnRectangle = mEmptyBlockRectangleDrawing;
+                    }
+                    switch (mContent)
+                    {
+                        case ITEM_TYPE.ONE_UP:
+                            break;
+                        case ITEM_TYPE.RED_MUSHROOM:
+                            Mario.MarioState state = (obst as Mario).mMarioState;
+                            if (state == Mario.MarioState.BIG || state == Mario.MarioState.FLOWER)
+                            {
+                                mContent = ITEM_TYPE.FLOWER;
+                            }
+                            break;
+                        case ITEM_TYPE.COIN:
+                            (obst as Mario).CoinUp();
+                            break;
+                    }
+                }               
             }
         }
     }

@@ -19,6 +19,7 @@ namespace SuperMarioBros
         Mario mPlayer;
         Camera mCamera;
         Color mClearColor;
+        GameInfos mUI;
 
         public MainLoop()
         {
@@ -34,10 +35,10 @@ namespace SuperMarioBros
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
             mLevelLoader = new LevelLoader();
             mPlayer = new Mario();
-            mCamera = new Camera();
+            mCamera = new Camera();            
+            mUI = new GameInfos();
             mClearColor = new Color(107, 140, 255);
             base.Initialize();
         }
@@ -50,12 +51,12 @@ namespace SuperMarioBros
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            mLevelLoader.LoadContent(Content, GraphicsDevice);
-            mPlayer.LoadContent(Content, GraphicsDevice);
+            mLevelLoader.LoadContent(Content, graphics);
+            mPlayer.LoadContent(Content, graphics);
+            mUI.LoadContent(Content, graphics);
             mPlayer.mPosition = mLevelLoader.mMarioStartPosition;
-            mCamera.mViewportSize = new Point(256, 256);
-            mCamera.CenterOn(mCamera.mViewportCenter);
-            
+            mCamera.mViewportSize = new Point(300, 256);
+            mCamera.CenterOn(mCamera.mViewportCenter);            
         }
 
         /// <summary>
@@ -75,11 +76,12 @@ namespace SuperMarioBros
         protected override void Update(GameTime gameTime)
         {
             mLevelLoader.Update(gameTime);
-            mPlayer.Update(mLevelLoader.mObstacles, gameTime);
+            //mPlayer.Update(gameTime);
             if(mPlayer.mPosition.X > mCamera.mCenter.X)
             {
                  mCamera.Move(new Vector2(mPlayer.mPosition.X - mCamera.mCenter.X, 0.0f));
             }
+            mUI.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -93,7 +95,8 @@ namespace SuperMarioBros
             GraphicsDevice.Clear(mClearColor);
             spriteBatch.Begin(SpriteSortMode.BackToFront, null, SamplerState.PointWrap, null, null, null, mCamera.mTranslationMatrix);
             mLevelLoader.Draw(spriteBatch);
-            mPlayer.Draw(spriteBatch);
+            //mPlayer.Draw(spriteBatch);
+            mUI.Draw(spriteBatch, ref mPlayer, ref mCamera);
             spriteBatch.End();
 
             base.Draw(gameTime);

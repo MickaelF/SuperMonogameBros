@@ -5,34 +5,98 @@ namespace SuperMarioBros.PhysicComponent
     public class Speed
     {
         private float _mSpeedLimit;
+        private float mSpeedMinimum;
         private float _mAcceleration;
         private float _mCurrentSpeed;
+        private bool _mAllowNegativeSpeed;
 
-        public float mSpeedLimit { get => _mSpeedLimit; set => _mSpeedLimit = value; }
         public float mAcceleration { get => _mAcceleration; set => _mAcceleration = value; }
         public float mCurrentSpeed { get => _mCurrentSpeed; private set => _mCurrentSpeed = value; }
-        public bool mNegativeSpeed;
+        public float mSpeedLimit
+        {
+            get => _mSpeedLimit;
+            set
+            {
+                _mSpeedLimit = value;
+                if (mAllowNegativeSpeed)
+                {
+                    mSpeedMinimum = -value;
+                }
+            }
+
+        }
+        public bool  mAllowNegativeSpeed
+        {
+            get => _mAllowNegativeSpeed;
+            set
+            {
+                _mAllowNegativeSpeed = value;
+                if (value)
+                {
+                    mSpeedMinimum = -mSpeedLimit;
+                }
+                else
+                {
+                    mSpeedMinimum = 0.0f;
+                }
+            }
+        }
+
+        public bool mEvolveInPositiveNumber;
 
         public Speed(float speedLimit)
         {
             mCurrentSpeed = 0.0f;
             mSpeedLimit = speedLimit;
-            mNegativeSpeed = false;
+            mAllowNegativeSpeed = false;
+            mEvolveInPositiveNumber = true;
         }
         
-        public void SpeedUp()
+        private void AugmentSpeed()
         {
-            mCurrentSpeed = MathHelper.Clamp(mCurrentSpeed + mAcceleration, 0, mSpeedLimit);
+
+            mCurrentSpeed = MathHelper.Clamp(mCurrentSpeed + mAcceleration, mSpeedMinimum, mSpeedLimit);
+        }
+
+        private void ReduceSpeed()
+        {
+            mCurrentSpeed = MathHelper.Clamp(mCurrentSpeed - mAcceleration, mSpeedMinimum, mSpeedLimit);
+        }
+
+        public void SpeedUp()
+        { 
+            if(mEvolveInPositiveNumber)
+            {
+                AugmentSpeed();
+            }
+            else
+            {
+                ReduceSpeed();
+            }
         }
 
         public void SlowDown()
         {
-            mCurrentSpeed = MathHelper.Clamp(mCurrentSpeed - mAcceleration, (mNegativeSpeed) ? -mSpeedLimit : 0, mSpeedLimit);
+            if(mEvolveInPositiveNumber)
+            {
+                ReduceSpeed();
+            }
+            else
+            {
+                AugmentSpeed();
+            }
         }
 
         public void SpeedToMax()
         {
-            mCurrentSpeed = mSpeedLimit;
+            if (mEvolveInPositiveNumber)
+            {
+                mCurrentSpeed = mSpeedLimit;
+            }
+            else
+            {
+                mCurrentSpeed = mSpeedMinimum;
+            }
         }
 
         public void SpeedToMin()

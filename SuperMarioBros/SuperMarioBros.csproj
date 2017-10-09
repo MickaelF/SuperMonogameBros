@@ -43,11 +43,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DisplayComponent\Camera.cs" />
-    <Compile Include="DisplayComponent\Character.cs" />
+    <Compile Include="DisplayComponent\GameInfos.cs" />
+    <Compile Include="DisplayComponent\MovableObstacle.cs" />
     <Compile Include="DisplayComponent\DrawableObstacle.cs" />
     <Compile Include="DisplayComponent\Mario.cs" />
     <Compile Include="LevelComponent\BackgroundSprites.cs" />
-    <Compile Include="LevelComponent\Items.cs" />
+    <Compile Include="LevelComponent\BreakableBrickDestroyAnimation.cs" />
+    <Compile Include="LevelComponent\FlowerBonus.cs" />
+    <Compile Include="LevelComponent\MushroomBonus.cs" />
     <Compile Include="LevelComponent\PipeBlock.cs" />
     <Compile Include="LevelComponent\TilableBlock.cs" />
     <Compile Include="LevelComponent\InteractiveBlock.cs" />
@@ -56,6 +59,7 @@
     <Compile Include="LevelComponent\TMXParser.cs" />
     <Compile Include="MainLoop.cs" />
     <Compile Include="PhysicComponent\Obstacle.cs" />
+    <Compile Include="PhysicComponent\ObstacleAccessor.cs" />
     <Compile Include="PhysicComponent\Ray2D.cs" />
     <Compile Include="PhysicComponent\Speed.cs" />
     <Compile Include="Program.cs" />

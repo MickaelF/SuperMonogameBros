@@ -12,11 +12,6 @@ namespace SuperMarioBros.LevelComponent
             mDestinationRectangle = position;
             mPosition = new Vector2(position.Location.X, position.Location.Y);
             mSize = new Vector2(position.Width, position.Height);
-            mSpriteAnimationStepNumber = new int[1];
-            mAnimationStartArray = new Rectangle[1];
-            mSpriteAnimationStepNumber[0] = 1;
-
-            mAnimationStartArray[0] = new Rectangle(Point.Zero, mSpriteSize);
            
             mIndexDrawnSprite = 0;
         }

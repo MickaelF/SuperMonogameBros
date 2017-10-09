@@ -7,9 +7,7 @@ namespace SuperMarioBros.LevelComponent
     {
         public BackgroundSprites(LevelLoader.ObjectType objectType, Point startPosition)
         {
-            mSpriteAnimationStepNumber = new int[1];
-            mSpriteAnimationStepNumber[0] = 1;
-            mAnimationStartArray = new Rectangle[1];
+            mDepthLevel = 1;
             switch (objectType)
             {
                 case LevelLoader.ObjectType.Bushes:

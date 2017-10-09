@@ -4,7 +4,6 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/MarioSpriteSheet.png</File>
     <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/Ground-C.png</File>
     <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/Ground-OW.png</File>
     <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/Ground-UW.png</File>
@@ -15,5 +14,8 @@
     <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Tiles/UnbreakableBrick-W.png</File>
     <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/Maps/World1-1.png</File>
     <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/UnTilableObjects-OW1.png</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/MarioSpriteSheet.png</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/font/UI.spritefont</File>
+    <File>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/font/coin.png</File>
   </SourceFiles>
 </SourceFileCollection>

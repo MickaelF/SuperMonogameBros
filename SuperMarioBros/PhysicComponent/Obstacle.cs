@@ -5,40 +5,32 @@ namespace SuperMarioBros.PhysicComponent
     public class Obstacle
     {
         static int sNextId = 0;
+        private int _cId;
 
         private Vector2 _mPosition;
         private Vector2 _mSize;
-        private int cId = sNextId++;
+        public int cId { get => _cId; private set => _cId = value; }
         public Vector2 mPosition { get => _mPosition; set => _mPosition = value; }
         public Vector2 mSize { get => _mSize; set => _mSize = value; }
         public bool mIsCollidable;
 
+        public enum CollisionWay
+        {
+            LEFT, RIGHT, ABOVE, BELOW
+        }
+
 
         public Obstacle()
         {
+            cId = sNextId++;
             mIsCollidable = true;
+            ObstacleAccessor.Instance.Add(this);
         }
 
-        public virtual void CollisionEffect()
+        public virtual void CollisionEffect(Obstacle obst, CollisionWay way)
         {
-
         }
-
-        public bool Intersect(Rectangle other)
-        {
-            if (mIsCollidable)
-            {
-                float intersectionLeft = System.Math.Max(mPosition.X, other.Location.X);
-                float intersectionRight = System.Math.Min(mPosition.X + mSize.X, other.Location.X + other.Size.X);
-                float intersectionTop = System.Math.Max(mPosition.Y, other.Location.Y);
-                float intersectionBottom = System.Math.Min(mPosition.Y + mSize.Y, other.Location.Y + other.Size.Y);
-                if ((intersectionLeft < intersectionRight) && (intersectionTop < intersectionBottom))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+              
 
         public bool Intersect(Obstacle other)
         {
@@ -48,7 +40,7 @@ namespace SuperMarioBros.PhysicComponent
 
         public bool Intersect(Obstacle other, ref Rectangle intersection)
         {
-            if (mIsCollidable)
+            if (mIsCollidable && other != this)
             {
                 float intersectionLeft = System.Math.Max(mPosition.X, other.mPosition.X);
                 float intersectionRight = System.Math.Min(mPosition.X + mSize.X, other.mPosition.X + other.mSize.X);
@@ -70,6 +62,33 @@ namespace SuperMarioBros.PhysicComponent
                 if (ray.mDirection == Vector2.Zero)
                 {
                     return false;
+                }
+                if (Contains(ray.mPosition))
+                {
+                    ray.mIdObstacleIntersected = cId;
+                    ray.mIntersection = ray.mPosition;
+                    if (ray.mDirection.X != 0.0f)
+                    {
+                        if(ray.mDirection.X > 0.0f)
+                        {
+                            ray.mIntersection = new Vector2(mPosition.X, ray.mIntersection.Y);
+                        }
+                        else
+                        {
+                            ray.mIntersection = new Vector2(mPosition.X + mSize.X, ray.mIntersection.Y);
+                        }
+                    }
+                    else if (ray.mDirection.Y != 0.0f)
+                    {
+                        if (ray.mDirection.Y > 0.0f)
+                        {
+                            ray.mIntersection = new Vector2(ray.mIntersection.X, mPosition.Y);
+                        }
+                        else
+                        {
+                            ray.mIntersection = new Vector2(ray.mIntersection.X, mPosition.Y + mSize.Y);;
+                        }
+                    }
                 }
                 Vector2[] bounds = new Vector2[2];
                 bounds[0] = mPosition;

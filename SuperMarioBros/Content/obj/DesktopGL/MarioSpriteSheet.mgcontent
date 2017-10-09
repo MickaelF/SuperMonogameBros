@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SourceFile>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/MarioSpriteSheet.png</SourceFile>
-  <SourceTime>2017-09-05T16:05:29.7341778+02:00</SourceTime>
+  <SourceTime>2017-10-09T16:01:42.262001+02:00</SourceTime>
   <DestFile>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/bin/DesktopGL/MarioSpriteSheet.xnb</DestFile>
-  <DestTime>2017-09-05T16:06:05.0510278+02:00</DestTime>
+  <DestTime>2017-10-09T16:02:17.9929047+02:00</DestTime>
   <Importer>TextureImporter</Importer>
   <ImporterTime>2017-03-01T16:05:36+01:00</ImporterTime>
   <Processor>TextureProcessor</Processor>

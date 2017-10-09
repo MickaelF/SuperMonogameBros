@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SuperMarioBros.DisplayComponent;
@@ -34,11 +34,9 @@ namespace SuperMarioBros.LevelComponent
             CASTLE,
             UNDERWATER
         }
-
-        private List<DrawableObstacle> _mObstacles;
-        public List<DrawableObstacle> mObstacles { get => _mObstacles; private set => _mObstacles = value; }
+       
         private List<BackgroundSprites> mBackgroundSprite;
-
+        private ObstacleAccessor mObstacleAccessor;
         public Vector2 mMarioStartPosition;
         private TMXParser mFileParser;
         private LevelContext mLevelContext;
@@ -51,8 +49,8 @@ namespace SuperMarioBros.LevelComponent
             mFilePath = filePath;
             mFileParser = new TMXParser(mFilePath);
             mTextures = new Texture2D[(int)ObjectType.End];
+            mObstacleAccessor = ObstacleAccessor.Instance;
 
-            mObstacles = new List<DrawableObstacle>();
             mBackgroundSprite = new List<BackgroundSprites>();
 
             if (mFileParser.mContextName == "Overworld")
@@ -181,7 +179,7 @@ namespace SuperMarioBros.LevelComponent
                 case "BreakableBricks":
                     type = ObjectType.BreakableBricks;
                     break;
-                case "UnbreakableBricks":
+                case "UnbreakableBricks-OW":
                     type = ObjectType.UnbreakableBricks;
                     break;
                 case "QuestionMarkBricks":
@@ -221,7 +219,7 @@ namespace SuperMarioBros.LevelComponent
             return type;
         }
 
-        public void LoadContent(Microsoft.Xna.Framework.Content.ContentManager content, GraphicsDevice graphics)
+        public void LoadContent(Microsoft.Xna.Framework.Content.ContentManager content, GraphicsDeviceManager graphics)
         {
             Texture2D spriteSheet = content.Load<Texture2D>("UnTilableObjects-OW1");
             mTextures[(int)ObjectType.BreakableBricks] = spriteSheet;
@@ -265,7 +263,6 @@ namespace SuperMarioBros.LevelComponent
                     InteractiveBlock block = new InteractiveBlock((int)mLevelContext, true, rectPos);
                     block.mContent = ContentInBlock(rectPos.Location);
                     block.mSpriteSheet = mTextures[(int)ObjectType.BreakableBricks];
-                    mObstacles.Add(block);
                     posX += 16;
                 }
             }
@@ -279,7 +276,6 @@ namespace SuperMarioBros.LevelComponent
                     InteractiveBlock block = new InteractiveBlock((int)mLevelContext, false, rectPos);
                     block.mContent = ContentInBlock(rectPos.Location);
                     block.mSpriteSheet = mTextures[(int)ObjectType.BreakableBricks];
-                    mObstacles.Add(block);
                     posX += 16;
                 }
             }
@@ -288,55 +284,45 @@ namespace SuperMarioBros.LevelComponent
             {
                 TilableBlock block = new TilableBlock(rect);
                 block.mSpriteSheet = mTextures[(int)ObjectType.Ground];
-                mObstacles.Add(block);
             }
 
             foreach (Rectangle rect in mMapDictionary[ObjectType.UnbreakableBricks])
             {
                 TilableBlock block = new TilableBlock(rect);
                 block.mSpriteSheet = mTextures[(int)ObjectType.UnbreakableBricks];
-                mObstacles.Add(block);
             }
 
             foreach (Rectangle rect in mMapDictionary[ObjectType.Pipe])
             {
                 PipeBlock pipe = new PipeBlock((int)mLevelContext, rect);
                 pipe.mSpriteSheet = mTextures[(int)ObjectType.Pipe];
-                mObstacles.Add(pipe);
             }
 
             foreach (Rectangle rect in mMapDictionary[ObjectType.Clouds])
             {
                 BackgroundSprites cloud = new BackgroundSprites(ObjectType.Clouds, rect.Location);
                 cloud.mSpriteSheet = mTextures[(int)ObjectType.Clouds];
-                mBackgroundSprite.Add(cloud);
             }
             foreach (Rectangle rect in mMapDictionary[ObjectType.Bushes])
             {
                 BackgroundSprites bushe = new BackgroundSprites(ObjectType.Bushes, rect.Location);
                 bushe.mSpriteSheet = mTextures[(int)ObjectType.Bushes];
-                mBackgroundSprite.Add(bushe);
             }
             foreach (Rectangle rect in mMapDictionary[ObjectType.SmallHills])
             {
                 BackgroundSprites sh = new BackgroundSprites(ObjectType.SmallHills, rect.Location);
                 sh.mSpriteSheet = mTextures[(int)ObjectType.SmallHills];
-                mBackgroundSprite.Add(sh);
             }
             foreach (Rectangle rect in mMapDictionary[ObjectType.LargeHills])
             {
                 BackgroundSprites lh = new BackgroundSprites(ObjectType.LargeHills, rect.Location);
                 lh.mSpriteSheet = mTextures[(int)ObjectType.LargeHills];
-                mBackgroundSprite.Add(lh);
             }
         }
 
         public void Update(GameTime gameTime)
         {
-            foreach (DrawableObstacle obst in mObstacles)
-            {
-                obst.Update(gameTime);
-            }
+            mObstacleAccessor.Update(gameTime);
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -345,10 +331,7 @@ namespace SuperMarioBros.LevelComponent
             {
                 sprite.Draw(spriteBatch);
             }
-            foreach (DrawableObstacle obst in mObstacles)
-            {
-                obst.Draw(spriteBatch);
-            }
+            mObstacleAccessor.Draw(spriteBatch);
         }
 
         private InteractiveBlock.ITEM_TYPE ContentInBlock(Point location)

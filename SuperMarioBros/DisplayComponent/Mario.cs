@@ -1,291 +1,428 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System.Collections.Generic;
 using SuperMarioBros.PhysicComponent;
+using SuperMarioBros.LevelComponent;
+using System.Collections.Generic;
 
 namespace SuperMarioBros.DisplayComponent
 {
-    public class Mario : Character
+    public class Mario : MovableObstacle
     {
         private bool mDoJump;
+        private bool mDoCrouch;
         private KeyboardState mOldKeyboardState;
-        private Vector2 mLastGoodPosition;
+        public int mNbCoins;
+        public int mScore;
+        private MarioState _mMarioState;
+        private int mNbLife;
+        private List<Rectangle[]> mMarioSpritePosition;
+        private List<int[]> mMarioAnimationStepNumber;
+
+        private Point[] mMarioSpriteSize;
+
+        // State transition animation variables
+        private bool mChangeStateAnimation;
+        private MarioStateTransition mNewState;
+        private List<Rectangle[]> mMarioStateTransitionPosition;
+        private int mTimerTransition;
+        private int mCurrentTransitionStep;
+
+        private AnimationName mRunningAnimationType;
+
+        public MarioState mMarioState
+        {
+            get => _mMarioState;
+            private set
+            {
+                _mMarioState = value;
+                mAnimationStartArray = mMarioSpritePosition[(int)value];
+                mSpriteSize = mMarioSpriteSize[(int)value];
+                mSize = new Vector2(mSpriteSize.X, mSpriteSize.Y);
+            }
+        }
+
+
         enum AnimationName
         {
-            IDLE,
+            IDLE = 0,
             RUN,
             SLOWDOWN,
             JUMP,
-            CROUCH,
-            NBLISTS
+            CROUCH, 
+            NBANIMATION
+        }
+
+        public enum MarioState
+        {
+            SMALL = 0, 
+            BIG, 
+            FLOWER,
+        }
+
+        private enum MarioStateTransition
+        {
+            SMALL2BIG,
+            BIG2FLOWER,
+            HIGHER2SMALL,
+            NBTRANSITIONS
         }
 
         public Mario()
         {
+            mMarioAnimationStepNumber = new List<int[]>();
+            mMarioAnimationStepNumber.Add(new int[(int)AnimationName.NBANIMATION]);
+            mMarioAnimationStepNumber[0][(int)AnimationName.IDLE] = 1;
+            mMarioAnimationStepNumber[0][(int)AnimationName.RUN] = 3;
+            mMarioAnimationStepNumber[0][(int)AnimationName.SLOWDOWN] = 1;
+            mMarioAnimationStepNumber[0][(int)AnimationName.JUMP] = 1;
+            mMarioAnimationStepNumber[0][(int)AnimationName.CROUCH] = 1;
+
+            mMarioAnimationStepNumber.Add(new int[(int)MarioStateTransition.NBTRANSITIONS]);
+            mMarioAnimationStepNumber[1][(int)MarioStateTransition.BIG2FLOWER] = 10;
+            mMarioAnimationStepNumber[1][(int)MarioStateTransition.HIGHER2SMALL] = 2;
+            mMarioAnimationStepNumber[1][(int)MarioStateTransition.SMALL2BIG] = 2;
+
+            mSpriteAnimationStepNumber = mMarioAnimationStepNumber[0];
+
+            mMarioSpritePosition = new List<Rectangle[]>();
+            mMarioSpriteSize = new Point[3];
+
+            mMarioSpritePosition.Add(new Rectangle[(int)AnimationName.NBANIMATION]);
+            mMarioSpriteSize[(int)MarioState.SMALL] = new Point(16, 16);
+            mMarioSpritePosition[(int)MarioState.SMALL][(int)AnimationName.IDLE] = new Rectangle(new Point(80, 34), mMarioSpriteSize[(int)MarioState.SMALL]);
+            mMarioSpritePosition[(int)MarioState.SMALL][(int)AnimationName.RUN] = new Rectangle(new Point(97, 34), mMarioSpriteSize[(int)MarioState.SMALL]);
+            mMarioSpritePosition[(int)MarioState.SMALL][(int)AnimationName.SLOWDOWN] = new Rectangle(new Point(148, 34), mMarioSpriteSize[(int)MarioState.SMALL]);
+            mMarioSpritePosition[(int)MarioState.SMALL][(int)AnimationName.JUMP] = new Rectangle(new Point(165, 34), mMarioSpriteSize[(int)MarioState.SMALL]);
+
+            mMarioSpriteSize[(int)MarioState.BIG] = new Point(16, 32);
+            mMarioSpritePosition.Add(new Rectangle[(int)AnimationName.NBANIMATION]);
+            mMarioSpritePosition[(int)MarioState.BIG][(int)AnimationName.IDLE] = new Rectangle(new Point(80, 1), mMarioSpriteSize[(int)MarioState.BIG]);
+            mMarioSpritePosition[(int)MarioState.BIG][(int)AnimationName.RUN] = new Rectangle(new Point(97, 1), mMarioSpriteSize[(int)MarioState.BIG]);
+            mMarioSpritePosition[(int)MarioState.BIG][(int)AnimationName.SLOWDOWN] = new Rectangle(new Point(148, 1), mMarioSpriteSize[(int)MarioState.BIG]);
+            mMarioSpritePosition[(int)MarioState.BIG][(int)AnimationName.JUMP] = new Rectangle(new Point(165, 1), mMarioSpriteSize[(int)MarioState.BIG]);
+            mMarioSpritePosition[(int)MarioState.BIG][(int)AnimationName.CROUCH] = new Rectangle(new Point(182, 1), mMarioSpriteSize[(int)MarioState.BIG]);
+
+            mMarioSpritePosition.Add(new Rectangle[(int)AnimationName.NBANIMATION]);
+            mMarioSpriteSize[(int)MarioState.FLOWER] = new Point(16, 32);
+            mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.IDLE] = new Rectangle(new Point(80, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
+            mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.RUN] = new Rectangle(new Point(97, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
+            mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.SLOWDOWN] = new Rectangle(new Point(148, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
+            mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.JUMP] = new Rectangle(new Point(165, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
+            mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.CROUCH] = new Rectangle(new Point(182, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
+
+            mMarioStateTransitionPosition = new List<Rectangle[]>();
+            mMarioStateTransitionPosition.Add(new Rectangle[mMarioAnimationStepNumber[1][(int)MarioStateTransition.SMALL2BIG]]);
+            mMarioStateTransitionPosition.Add(new Rectangle[mMarioAnimationStepNumber[1][(int)MarioStateTransition.BIG2FLOWER]]);
+            mMarioStateTransitionPosition.Add(new Rectangle[mMarioAnimationStepNumber[1][(int)MarioStateTransition.HIGHER2SMALL]]);
+
+            mMarioStateTransitionPosition[(int)MarioStateTransition.SMALL2BIG][0] = new Rectangle(new Point(437, 1), mMarioSpriteSize[(int)MarioState.BIG]);
+            mMarioStateTransitionPosition[(int)MarioStateTransition.SMALL2BIG][1] = new Rectangle(new Point(335, 1), mMarioSpriteSize[(int)MarioState.BIG]);
+
+            
+            mMarioStateTransitionPosition[(int)MarioStateTransition.BIG2FLOWER][0] = new Rectangle(new Point(80, 1), mMarioSpriteSize[(int)MarioState.BIG]);
+            int yPos = 66;
+            for (int i = 0; i< mMarioAnimationStepNumber[1][(int)MarioStateTransition.BIG2FLOWER]; ++i, yPos += 63)
+            {
+                mMarioStateTransitionPosition[(int)MarioStateTransition.BIG2FLOWER][i] = new Rectangle(new Point(80, yPos), mMarioSpriteSize[(int)MarioState.BIG]);                
+            }
+
             mIsAnimated = true;
             mDoJump = false;
+            mMarioState = MarioState.SMALL;
+            mNbCoins = 0;
+            mScore = 0;
+            mMoveVector = new Vector2(1.0f, -1.0f);
+            mNbLife = 3;
 
-            mSpriteSize = new Point(16, 32);
+            mAnimationOffset = 1;
+
             mHorizontalSpeed = new Speed(100);
-            mHorizontalSpeed.mAcceleration = 10;
-            mVerticalSpeed = new Speed(300);
-            mVerticalSpeed.mAcceleration = 10;
-            mVerticalSpeed.mNegativeSpeed = true;
+            mHorizontalSpeed.mAcceleration = 2;
+            mHorizontalSpeed.mAllowNegativeSpeed = true;
+            mVerticalSpeed = new Speed(400);
+            mVerticalSpeed.mAcceleration = 50;
+            mVerticalSpeed.mAllowNegativeSpeed = true;
 
-            mSize = new Vector2(16, 32);
-
-            mSpriteAnimationStepNumber = new int[(int)AnimationName.NBLISTS];
-            mSpriteAnimationStepNumber[(int)AnimationName.IDLE] = 1;
-            mSpriteAnimationStepNumber[(int)AnimationName.RUN] = 3;
-            mSpriteAnimationStepNumber[(int)AnimationName.SLOWDOWN] = 1;
-            mSpriteAnimationStepNumber[(int)AnimationName.JUMP] = 1;
-            mSpriteAnimationStepNumber[(int)AnimationName.CROUCH] = 1;
-
-            mAnimationStartArray = new Rectangle[(int)AnimationName.NBLISTS];
-            mAnimationStartArray[(int)AnimationName.IDLE] = new Rectangle(new Point(0, 0), mSpriteSize);
-            mAnimationStartArray[(int)AnimationName.RUN] = new Rectangle(new Point(17, 0), mSpriteSize);
-            mAnimationStartArray[(int)AnimationName.SLOWDOWN] = new Rectangle(new Point(68, 0), mSpriteSize);
-            mAnimationStartArray[(int)AnimationName.JUMP] = new Rectangle(new Point(85, 0), mSpriteSize);
-            mAnimationStartArray[(int)AnimationName.CROUCH] = new Rectangle(new Point(102, 0), mSpriteSize);
-
+            mDrawnRectangle = mAnimationStartArray[(int)AnimationName.IDLE];
         }
 
-        public void LoadContent(Microsoft.Xna.Framework.Content.ContentManager content, GraphicsDevice graphics)
+        public void LifeUp()
+        {
+            mNbLife++;
+        }
+
+        public void LifeDown()
+        {
+            mNbLife--;
+        }
+
+        public void StateUp()
+        {
+            mChangeStateAnimation = true;
+            mTimerTransition = 1000;
+            mCurrentTransitionStep = 0;
+            if (mMarioState == MarioState.SMALL)
+            {
+            mPosition = new Vector2(mPosition.X, mPosition.Y - 16.0f);
+                mNewState = MarioStateTransition.SMALL2BIG;
+            }
+            else if(mMarioState == MarioState.BIG)
+            {
+                mNewState = MarioStateTransition.BIG2FLOWER;
+            }
+        }
+
+        public void MarioGotHit()
+        {
+            if(mMarioState == MarioState.SMALL)
+            {
+                // U ded bro
+            }
+            else
+            {
+                mChangeStateAnimation = true;
+                mCurrentTransitionStep = 0;
+                mTimerTransition = 1000;
+                mNewState = MarioStateTransition.HIGHER2SMALL;
+            }
+        }
+
+        public void CoinUp()
+        {
+            mNbCoins++;
+            mScore += 200;
+        }
+
+        public void LoadContent(Microsoft.Xna.Framework.Content.ContentManager content, GraphicsDeviceManager graphics)
         {
             mSpriteSheet = content.Load<Texture2D>("MarioSpriteSheet");
             mIndexDrawnSprite = (int)AnimationName.JUMP;
         }
 
-        public void Update(List<DrawableObstacle> arrayObstacle, GameTime gameTime)
+        public override void CollisionEffect(Obstacle obst, CollisionWay way)
         {
-            CheckInput();
-            if (gameTime.ElapsedGameTime.Milliseconds != 0)
+            if (!(obst is MushroomBonus || obst is FlowerBonus))
             {
-                mMovementInPixel = new Vector2(mHorizontalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f, mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
-            }
-            SetTimeBetweenAnimation((50 * mHorizontalSpeed.mSpeedLimit) / mHorizontalSpeed.mCurrentSpeed);
-            CollisionDetection(arrayObstacle);
-            if (mDoJump)
-            {
-                mDoJump = false;
-                mVerticalSpeed.SpeedToMax();
-                mMovementInPixel.Y = mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-                mIsFalling = true;
-            }
-            if (mIsFalling)
-            {
-                mVerticalSpeed.SlowDown();
-                mMoveVector = new Vector2(mMoveVector.X, -1.0f);
-                mIndexDrawnSprite = (int)AnimationName.JUMP;
-                if(mPosition.Y > 400.0f)
+                if (way == CollisionWay.ABOVE || way == CollisionWay.BELOW)
                 {
-                    mPosition = mLastGoodPosition;
+                    mVerticalSpeed.Stop();
+                }
+                else
+                {
+                    mHorizontalSpeed.Stop();
                 }
             }
-            else if (mVerticalSpeed.mCurrentSpeed != 0.0f)
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            if (mChangeStateAnimation)
             {
-                mVerticalSpeed.Stop();
-                mMovementInPixel.Y = 0.0f;
-                mMoveVector = new Vector2(mMoveVector.X, 0.0f);
+                if (mTimerTransition > 0)
+                {
+                    mMilliseconds += gameTime.ElapsedGameTime.Milliseconds;
+                    if(mMilliseconds > 40)
+                    {
+                        mMilliseconds = 0;
+                        mCurrentTransitionStep++;
+                        if(mCurrentTransitionStep >= mMarioAnimationStepNumber[1][(int)mNewState])
+                        {
+                            mCurrentTransitionStep = 0;
+                        }
+                        mDrawnRectangle = mMarioStateTransitionPosition[(int)mNewState][mCurrentTransitionStep];
+                    }
+                    mTimerTransition -= gameTime.ElapsedGameTime.Milliseconds;
+                }
+                else
+                {
+                    mChangeStateAnimation = false;
+                    switch(mNewState)
+                    {
+                        case MarioStateTransition.SMALL2BIG:
+                            mMarioState = MarioState.BIG;
+                            mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
+                            break;
+                    }
+                }
             }
             else
             {
-                mLastGoodPosition = mPosition;
+                CheckInput();
+                if (gameTime.ElapsedGameTime.Milliseconds != 0)
+                {
+                    mMovementInPixel = new Vector2(mHorizontalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f, mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+                }
+                SetTimeBetweenAnimation((50 * mHorizontalSpeed.mSpeedLimit) / System.Math.Abs(mHorizontalSpeed.mCurrentSpeed));
+                CollisionDetection();
+                if (mDoJump)
+                {
+                    mDoJump = false;
+                    mVerticalSpeed.SpeedToMax();
+                    mVerticalSpeed.mAcceleration = 50;
+                    mMovementInPixel.Y = mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+                    mIsFalling = true;
+                }
+                if (mIsFalling)
+                {
+                    mVerticalSpeed.SlowDown();
+                    mIndexDrawnSprite = (int)AnimationName.JUMP;
+                }
+                DefineCurrentAnimation();
+                base.Update(gameTime);
             }
-            base.Update(gameTime);
+        }
+
+        public void DefineCurrentAnimation()
+        {
+            if(mIsFalling)
+            {
+                mIndexDrawnSprite = (int)AnimationName.JUMP;
+            }
+            else if(mDoCrouch && mMarioState != MarioState.SMALL)
+            {
+                mIndexDrawnSprite = (int)AnimationName.CROUCH;
+            }
+            else
+            {
+                if (mHorizontalSpeed.mCurrentSpeed == 0.0f)
+                {
+                    mIndexDrawnSprite = (int)AnimationName.IDLE;
+                }
+                else
+                {
+                    mIndexDrawnSprite = (int)mRunningAnimationType;
+                    if(mRunningAnimationType != AnimationName.SLOWDOWN)
+                    {
+                        if (mHorizontalSpeed.mCurrentSpeed > 0.0f)
+                        {
+                            TextureFaceRight();
+                        }
+                        else
+                        {
+                            TextureFaceLeft();
+                        }
+                    }
+                    else
+                    {
+                        if (mHorizontalSpeed.mCurrentSpeed < 0.0f)
+                        {
+                            TextureFaceRight();
+                        }
+                        else
+                        {
+                            TextureFaceLeft();
+                        }
+                    }
+                    
+                }
+            }
         }
         
-        public void CollisionDetection(List<DrawableObstacle> arrayObstacle)
-        {
-            // On crée trois rayons qui partent du personnage.
-            float xPos = mPosition.X;
-            float bottomTestXPos = mPosition.X + mSize.X;
-
-            if(mMoveVector.X == 1.0f)
-            {
-                xPos += mSize.X;
-                bottomTestXPos -= mSize.X;
-            }
-
-            Ray2D[] rayForward = new Ray2D[3];
-            rayForward[0] = new Ray2D(new Vector2(xPos, mPosition.Y), new Vector2(mMoveVector.X, 0.0f));
-            rayForward[1] = new Ray2D(new Vector2(xPos, mPosition.Y + mSize.Y * 0.5f), new Vector2(mMoveVector.X, 0.0f));
-            rayForward[2] = new Ray2D(new Vector2(xPos, mPosition.Y + mSize.Y), new Vector2(mMoveVector.X, 0.0f));
-
-            Ray2D[] rayVerticalTests = new Ray2D[3];
-            float verticalPosition = (mVerticalSpeed.mCurrentSpeed > 0) ? mPosition.Y : mPosition.Y + mSize.Y;
-            float rayDirection = (mVerticalSpeed.mCurrentSpeed > 0) ? -1.0f : 1.0f;
-            rayVerticalTests[0] = new Ray2D(new Vector2(mPosition.X, verticalPosition), new Vector2(0.0f, rayDirection));
-            rayVerticalTests[1] = new Ray2D(new Vector2(mPosition.X + mSize.X, verticalPosition), new Vector2(0.0f, rayDirection));
-            rayVerticalTests[2] = new Ray2D(new Vector2(mPosition.X + mSize.X * 0.5f, verticalPosition), new Vector2(0.0f, rayDirection));
-
-            foreach (Obstacle obst in arrayObstacle)
-            {
-                for (int i = 0; i < rayForward.Length; ++i)
-                {
-                    obst.Intersect(ref rayForward[i]);
-                }
-
-                for (int i = 0; i < rayVerticalTests.Length; ++i)
-                {
-                    obst.Intersect(ref rayVerticalTests[i]);
-                }
-            }
-
-            // Collision mouvement horizontal
-            float nextHorizontalMovement = System.Math.Abs(mMovementInPixel.X) + 1;
-            List<Ray2D> rayUsed = new List<Ray2D>();
-            foreach (Ray2D r in rayForward)
-            {
-                if (r.IsIntersectionFound() && !float.IsNaN(r.mIntersectionDistance))
-                {
-                    rayUsed.Add(r);
-                }
-            }
-            
-            if (rayUsed.Count > 0)
-            {
-                float lowestDistanceCollision = rayUsed[0].mIntersectionDistance;
-                for (int i = 1; i < rayUsed.Count; ++i)
-                {
-                    lowestDistanceCollision = MathHelper.Min(lowestDistanceCollision, rayUsed[i].mIntersectionDistance);
-                }
-                if (lowestDistanceCollision == 0.0f)
-                {
-                    mMovementInPixel.X = 0;
-                }
-                else if (lowestDistanceCollision < System.Math.Abs(mMovementInPixel.X))
-                {
-                    mMovementInPixel.X = System.Math.Sign(mMovementInPixel.X) * lowestDistanceCollision;
-                }
-            }
-
-            // Collision mouvement vertical
-            mIsFalling = true;
-            rayUsed.Clear();
-            foreach (Ray2D r in rayVerticalTests)
-            {
-                if (r.IsIntersectionFound() && !float.IsNaN(r.mIntersectionDistance))
-                {
-                    rayUsed.Add(r);
-                }
-            }
-            if(rayUsed.Count > 0)
-            {
-                float lowestDistanceCollision = rayUsed[0].mIntersectionDistance;
-                int idObstacleCollided = rayUsed[0].mIdObstacleIntersected;
-                for (int i = 1; i < rayUsed.Count; ++i)
-                {
-                    if(lowestDistanceCollision > rayUsed[i].mIntersectionDistance)
-                    {
-                        lowestDistanceCollision = rayUsed[i].mIntersectionDistance;
-                        idObstacleCollided = rayUsed[i].mIdObstacleIntersected;
-                    }
-                }
-                if (lowestDistanceCollision == 0.0f)
-                {
-                    mIsFalling = false;
-                    if (mVerticalSpeed.mCurrentSpeed > 0.0f)
-                    {
-                        arrayObstacle[idObstacleCollided - 1].CollisionEffect();
-                    }
-                }
-                else if (lowestDistanceCollision < System.Math.Abs(mMovementInPixel.Y))
-                {
-                    mMovementInPixel.Y = System.Math.Sign(mMovementInPixel.Y) * lowestDistanceCollision;
-                }
-            }
-            
-        }
 
         public void CheckInput()
         {
             KeyboardState state = Keyboard.GetState();
+
+            mDoCrouch = false;
+            bool moveButtonPressed = false;
             // Go Left
             if (state.IsKeyDown(Keys.Left) || state.IsKeyDown(Keys.Q))
             {
-                if (mMoveVector.X == 0.0f)
+                moveButtonPressed = true;
+                if (mHorizontalSpeed.mEvolveInPositiveNumber)
                 {
-                    mMoveVector = new Vector2(-1.0f, mMoveVector.Y);
-                }
-                else if (mMoveVector.X == 1.0f)
-                {
-                    mHorizontalSpeed.SlowDown();
                     if (mHorizontalSpeed.mCurrentSpeed <= 0.0f)
                     {
-                        mMoveVector = new Vector2(-1.0f, mMoveVector.Y);
+                        mHorizontalSpeed.mEvolveInPositiveNumber = false;
                     }
-                    TextureFaceLeft();
-                    mIndexDrawnSprite = (int)AnimationName.SLOWDOWN;
+                    else
+                    {
+                        mHorizontalSpeed.SlowDown();
+                        mRunningAnimationType = AnimationName.SLOWDOWN;
+                    }
                 }
                 else
                 {
-                    TextureFaceLeft();
                     mHorizontalSpeed.SpeedUp();
-                    mIndexDrawnSprite = (int)AnimationName.RUN;
+                    mRunningAnimationType = AnimationName.RUN;
                 }
+
             }
             // Go Right
             else if (state.IsKeyDown(Keys.Right) || state.IsKeyDown(Keys.D))
             {
-                if (mMoveVector.X == 0.0f)
+                moveButtonPressed = true;
+                if (!mHorizontalSpeed.mEvolveInPositiveNumber)
                 {
-                    mMoveVector = new Vector2(1.0f, mMoveVector.Y);
-                }
-                if (mMoveVector.X == -1.0f)
-                {
-                    mHorizontalSpeed.SlowDown();
-                    if (mHorizontalSpeed.mCurrentSpeed <= 0.0f)
+                    if (mHorizontalSpeed.mCurrentSpeed >= 0.0f)
                     {
-                        mMoveVector = new Vector2(1.0f, mMoveVector.Y);
+                        mHorizontalSpeed.mEvolveInPositiveNumber = true;
                     }
-                    TextureFaceRight();
-                    mIndexDrawnSprite = (int)AnimationName.SLOWDOWN;
+                    else
+                    {
+                        mHorizontalSpeed.SlowDown();
+                        mRunningAnimationType = AnimationName.SLOWDOWN;
+                    }
                 }
                 else
                 {
-                    TextureFaceRight();
                     mHorizontalSpeed.SpeedUp();
-                    mIndexDrawnSprite = (int)AnimationName.RUN;
+                    mRunningAnimationType = AnimationName.RUN;
                 }
             }
-            else
+
+            if (state.IsKeyDown(Keys.Down) || state.IsKeyDown(Keys.S))
+            {
+                moveButtonPressed = false;
+                mDoCrouch = true;
+            }
+
+            if (!moveButtonPressed)
             {
                 mHorizontalSpeed.SlowDown();
-                if (mHorizontalSpeed.mCurrentSpeed <= 0.0f)
+                if (mHorizontalSpeed.mEvolveInPositiveNumber)
                 {
-                    if (!mIsFalling)
+                    if (mHorizontalSpeed.mCurrentSpeed <= 0.0f)
                     {
-                        mIndexDrawnSprite = (int)AnimationName.IDLE;
+                        mHorizontalSpeed.Stop();
                     }
-                    mMoveVector = new Vector2(0.0f, mMoveVector.Y);
+                }
+                else
+                {
+                    if (mHorizontalSpeed.mCurrentSpeed >= 0.0f)
+                    {
+                        mHorizontalSpeed.Stop();
+                    }
                 }
             }
-            if (state.IsKeyDown(Keys.LeftShift))
+                
+            if (state.IsKeyDown(Keys.LeftShift) && mOldKeyboardState.IsKeyUp(Keys.LeftShift))
             {
                 // Run
                 mHorizontalSpeed.DoubleSpeedLimit();
             }
-            else if(state.IsKeyUp(Keys.LeftShift) && mOldKeyboardState.IsKeyDown(Keys.LeftShift))
+            else if (state.IsKeyUp(Keys.LeftShift) && mOldKeyboardState.IsKeyDown(Keys.LeftShift))
             {
                 // Stop Running 
                 mHorizontalSpeed.SpeedLimitToNormal();
             }
 
             if (state.IsKeyDown(Keys.Space))
-            {
+            {                
                 if (!mIsFalling && mOldKeyboardState.IsKeyUp(Keys.Space))
                 {
                     mDoJump = true;
                 }
+                else if (mIsFalling && mOldKeyboardState.IsKeyDown(Keys.Space)) {
+                    if (mVerticalSpeed.mAcceleration > 10 && mVerticalSpeed.mCurrentSpeed > 0.0f)
+                    {
+                        mVerticalSpeed.mAcceleration -= 10;
+                    }
+                }
             }
-            if (state.IsKeyDown(Keys.S) || state.IsKeyDown(Keys.Down))
-            {
-                mIndexDrawnSprite = (int)AnimationName.CROUCH;
-            }
+            
             mOldKeyboardState = state;
         }
-
     }
 }

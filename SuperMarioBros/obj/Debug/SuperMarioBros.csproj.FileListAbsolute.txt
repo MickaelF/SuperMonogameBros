@@ -1,4 +1,3 @@
-C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\obj\Debug\SuperMarioBros.csprojResolveAssemblyReference.cache
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\MonoGame.Framework.dll.config
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\MarioSpriteSheet.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\x86\SDL2.dll
@@ -26,3 +25,8 @@ C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debu
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Tiles\UnbreakableBrick-W.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Maps\World1-1.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\UnTilableObjects-OW1.xnb
+C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\obj\Debug\SuperMarioBros.csprojResolveAssemblyReference.cache
+C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\obj\Debug\SuperMarioBros.csproj.CoreCompileInputs.cache
+C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\UI.xnb
+C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\font\UI.xnb
+C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\font\coin.xnb
