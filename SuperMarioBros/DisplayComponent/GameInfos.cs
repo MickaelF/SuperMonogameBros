@@ -10,11 +10,18 @@ namespace SuperMarioBros.DisplayComponent
         private string[] mFirstLine;
         private float mTimeLeft;
         private Texture2D mCoin;
+        private int mElapsedTime;
+        private int mStopFirstFrameCoinAnimation;
+
+        private Rectangle mDrawnRectangle;
         
         public GameInfos()
         {
             mLineX = new int[4];
             mFirstLine = new string[4];
+            mElapsedTime = 0;
+            mDrawnRectangle = new Rectangle(0, 0, 9, 13);
+            mStopFirstFrameCoinAnimation = 0;
         }
 
         public void LoadContent(Microsoft.Xna.Framework.Content.ContentManager content, GraphicsDeviceManager graphics)
@@ -36,6 +43,24 @@ namespace SuperMarioBros.DisplayComponent
         public virtual void Update(GameTime gameTime)
         {
             mTimeLeft -= gameTime.ElapsedGameTime.Milliseconds;
+            mElapsedTime += gameTime.ElapsedGameTime.Milliseconds;
+            if (mElapsedTime > 100)
+            {
+                bool changeDrawnCoin = true;
+                if(mDrawnRectangle.X == 0)
+                {
+                    if (++mStopFirstFrameCoinAnimation < 5)
+                    {
+                        changeDrawnCoin = false;
+                    }
+                }
+                if (changeDrawnCoin)
+                { 
+                    mDrawnRectangle.X = (mDrawnRectangle.X >= 40) ? 0 : mDrawnRectangle.X + 10;
+                    mStopFirstFrameCoinAnimation = 0;
+                }
+                mElapsedTime = 0;
+            }
         }
 
         public virtual void Draw(SpriteBatch spriteBatch, ref Mario mario, ref Camera cam)
@@ -54,7 +79,8 @@ namespace SuperMarioBros.DisplayComponent
             {
                 spriteBatch.DrawString(mFont, secondLine[i], cam.ScreenToWorldPosition(new Vector2(mLineX[i], 30)), Color.White);
             }
-            spriteBatch.Draw(mCoin, cam.ScreenToWorldPosition(new Vector2(mLineX[1] - 14, 30)), Color.White);
+            
+            spriteBatch.Draw(mCoin, cam.ScreenToWorldPosition(new Vector2(mLineX[1] - 20, 30)), mDrawnRectangle, Color.White);
         }
     }
 }

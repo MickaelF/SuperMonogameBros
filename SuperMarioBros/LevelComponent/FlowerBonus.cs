@@ -5,15 +5,13 @@ using SuperMarioBros.PhysicComponent;
 
 namespace SuperMarioBros.LevelComponent
 {
-    public class FlowerBonus : DrawableObstacle
+    public class FlowerBonus : Bonus
     {
         public FlowerBonus(Vector2 origin, Texture2D spriteSheet)
+            : base(origin, spriteSheet)
         {
             mSpriteSheet = spriteSheet;
-            mPosition = new Vector2(origin.X, origin.Y - 16.0f);
-
-            mSize = new Vector2(16.0f, 16.0f);
-            mSpriteSize = new Point(16, 16);
+            
             mDrawnRectangle = new Rectangle(new Point(80, 80), mSpriteSize);
             mAnimationStartArray = new Rectangle[1];
             mAnimationStartArray[0] = mDrawnRectangle;
@@ -21,6 +19,15 @@ namespace SuperMarioBros.LevelComponent
             mSpriteAnimationStepNumber = new int[1];
             mSpriteAnimationStepNumber[0] = 3;
             SetTimeBetweenAnimation(50.0f);
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            if (mStartAnimation)
+            {
+                PlayStartAnimation(gameTime);
+            }
+            base.Update(gameTime);
         }
 
         public override void CollisionEffect(Obstacle obst, CollisionWay way)

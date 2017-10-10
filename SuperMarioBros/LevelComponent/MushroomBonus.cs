@@ -6,29 +6,20 @@ using System.Collections.Generic;
 
 namespace SuperMarioBros.LevelComponent
 {
-    public class MushroomBonus : MovableObstacle
+    public class MushroomBonus : Bonus
     {
         private bool mIsOneUp;
-        private bool mStartAnimation;
-        private float mStartPosition;
         public MushroomBonus(bool oneUpBonus, Vector2 origin, Texture2D spriteSheet)
+            : base(origin, spriteSheet)
         {
-            mStartAnimation = true;
-            mStartPosition = origin.Y - 16.0f;
-            mSpriteSheet = spriteSheet;
             mIsOneUp = oneUpBonus;
-            mMoveVector = new Vector2(1.0f, -1.0f);
-            mPosition = new Vector2(origin.X, origin.Y);
             mHorizontalSpeed = new Speed(50);
             mHorizontalSpeed.mAllowNegativeSpeed = true;
             mHorizontalSpeed.SpeedToMax();
             mVerticalSpeed = new Speed(100);
             mVerticalSpeed.mAllowNegativeSpeed = true;
             mVerticalSpeed.mAcceleration = 10;
-            mSize = new Vector2(16.0f, 16.0f);
-
-            mSpriteSize = new Point(16, 16);
-             
+                         
             if(oneUpBonus)
             {
                 mDrawnRectangle = new Rectangle(new Point(96, 96), mSpriteSize);
@@ -62,14 +53,7 @@ namespace SuperMarioBros.LevelComponent
             }
             else
             {
-                if (mPosition.Y > mStartPosition)
-                {
-                    mMovementInPixel = new Vector2(0.0f, 20 * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
-                }
-                else
-                {
-                    mStartAnimation = false;
-                }
+                PlayStartAnimation(gameTime);
             }
             base.Update(gameTime);
         }

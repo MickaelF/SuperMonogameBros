@@ -55,8 +55,9 @@ namespace SuperMarioBros
             mPlayer.LoadContent(Content, graphics);
             mUI.LoadContent(Content, graphics);
             mPlayer.mPosition = mLevelLoader.mMarioStartPosition;
-            mCamera.mViewportSize = new Point(300, 256);
-            mCamera.CenterOn(mCamera.mViewportCenter);            
+            //mCamera.mViewportSize = new Point(240, 220);
+            mCamera.ZoomUp(1.0f);
+            mCamera.CenterOn(new Vector2(0, 0));            
         }
 
         /// <summary>
@@ -77,9 +78,9 @@ namespace SuperMarioBros
         {
             mLevelLoader.Update(gameTime);
             //mPlayer.Update(gameTime);
-            if(mPlayer.mPosition.X > mCamera.mCenter.X)
+            if(mPlayer.mPosition.X > mCamera.mCenter.X + 120)
             {
-                 mCamera.Move(new Vector2(mPlayer.mPosition.X - mCamera.mCenter.X, 0.0f));
+                 mCamera.Move(new Vector2(mPlayer.mPosition.X - mCamera.mCenter.X - 120, 0.0f));
             }
             mUI.Update(gameTime);
 
@@ -93,9 +94,9 @@ namespace SuperMarioBros
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(mClearColor);
+            Matrix mat = mCamera.mTranslationMatrix;
             spriteBatch.Begin(SpriteSortMode.BackToFront, null, SamplerState.PointWrap, null, null, null, mCamera.mTranslationMatrix);
             mLevelLoader.Draw(spriteBatch);
-            //mPlayer.Draw(spriteBatch);
             mUI.Draw(spriteBatch, ref mPlayer, ref mCamera);
             spriteBatch.End();
 

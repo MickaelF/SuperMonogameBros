@@ -137,26 +137,6 @@ namespace SuperMarioBros.LevelComponent
                         case ITEM_TYPE.FLOWER:
                             new FlowerBonus(mPosition, mSpriteSheet);
                             break;
-                        case ITEM_TYPE.COIN:
-                            mCoins = new MovableObstacle();
-                            mCoins.mIsAnimated = true;
-                            mCoins.mIsCollidable = false;
-                            mCoins.mSpriteSheet = mSpriteSheet;
-                            mCoins.mSize = new Vector2(16, 16);
-                            mCoins.mMoveVector = new Vector2(0.0f, -1.0f);
-                            mCoins.mPosition = mPosition;
-                            mCoins.mVerticalSpeed = new Speed(100);
-                            mCoins.mVerticalSpeed.mAcceleration = 20;
-                            mCoins.mVerticalSpeed.SpeedToMax();
-                            mCoins.mVerticalSpeed.mAllowNegativeSpeed = true;
-
-                            mCoins.mSpriteAnimationStepNumber = new int[1];
-                            mCoins.mSpriteAnimationStepNumber[0] = 3;
-                            mCoins.SetTimeBetweenAnimation(50.0f);
-                            mCoins.mDrawnRectangle = new Rectangle(new Point(48, 114), mSpriteSize);
-                            mCoins.mAnimationStartArray = new Rectangle[1];
-                            mCoins.mAnimationStartArray[0] = mDrawnRectangle;
-                            break;
                         case ITEM_TYPE.NONE:
                             mIsCollided = false;
                             break;
@@ -208,6 +188,7 @@ namespace SuperMarioBros.LevelComponent
                             break;
                         case ITEM_TYPE.COIN:
                             (obst as Mario).CoinUp();
+                            new CoinBonus(mPosition, mSpriteSheet, true);
                             break;
                     }
                 }               

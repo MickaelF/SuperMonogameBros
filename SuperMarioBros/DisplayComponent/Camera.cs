@@ -59,6 +59,7 @@ namespace SuperMarioBros.DisplayComponent
         {
             return Vector2.Transform(screenPos, Matrix.Invert(mTranslationMatrix));
         }
+
         public void CenterOn(Vector2 center)
         {
             mCenter = center;

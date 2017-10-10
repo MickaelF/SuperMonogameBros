@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SourceFile>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/font/UI.spritefont</SourceFile>
-  <SourceTime>2017-10-09T13:35:47.4272669+02:00</SourceTime>
+  <SourceTime>2017-10-10T16:33:20.9287388+02:00</SourceTime>
   <DestFile>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/bin/DesktopGL/font/UI.xnb</DestFile>
-  <DestTime>2017-10-09T13:35:49.7001643+02:00</DestTime>
+  <DestTime>2017-10-10T16:33:39.0205818+02:00</DestTime>
   <Importer>FontDescriptionImporter</Importer>
   <ImporterTime>2017-03-01T16:05:36+01:00</ImporterTime>
   <Processor>FontDescriptionProcessor</Processor>

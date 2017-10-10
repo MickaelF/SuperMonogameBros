@@ -6,6 +6,7 @@ namespace SuperMarioBros.DisplayComponent
     public class MovableObstacle : DrawableObstacle
     {
         private Vector2 _mMoveVector;
+        protected bool mIsMovable;
 
         public Vector2 mMoveVector { get => _mMoveVector; set => _mMoveVector = value; }
         public bool mIsFalling { get => _mIsFalling; set => _mIsFalling = value; }
@@ -23,13 +24,17 @@ namespace SuperMarioBros.DisplayComponent
         public MovableObstacle ()
         {
             mMovementInPixel = new Vector2(0.0f, 0.0f);
+            mIsMovable = true;
         }
 
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
 
-            mPosition = new Vector2(mPosition.X + mMoveVector.X * mMovementInPixel.X, mPosition.Y + mMoveVector.Y * mMovementInPixel.Y);
+            if (mIsMovable)
+            {
+                mPosition = new Vector2(mPosition.X + mMoveVector.X * mMovementInPixel.X, mPosition.Y + mMoveVector.Y * mMovementInPixel.Y);
+            }
         }
 
         public void InverseInX()

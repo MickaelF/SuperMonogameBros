@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SourceFile>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/UnTilableObjects-OW1.png</SourceFile>
-  <SourceTime>2017-10-02T16:47:34.0266098+02:00</SourceTime>
+  <SourceTime>2017-10-10T16:05:48.2340645+02:00</SourceTime>
   <DestFile>C:/Users/Mickael/Desktop/SuperMarioBros/SuperMarioBros/Content/bin/DesktopGL/UnTilableObjects-OW1.xnb</DestFile>
-  <DestTime>2017-10-02T16:49:17.9384342+02:00</DestTime>
+  <DestTime>2017-10-10T16:07:08.4904776+02:00</DestTime>
   <Importer>TextureImporter</Importer>
   <ImporterTime>2017-03-01T16:05:36+01:00</ImporterTime>
   <Processor>TextureProcessor</Processor>

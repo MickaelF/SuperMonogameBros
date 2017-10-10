@@ -48,7 +48,9 @@
     <Compile Include="DisplayComponent\DrawableObstacle.cs" />
     <Compile Include="DisplayComponent\Mario.cs" />
     <Compile Include="LevelComponent\BackgroundSprites.cs" />
+    <Compile Include="LevelComponent\Bonus.cs" />
     <Compile Include="LevelComponent\BreakableBrickDestroyAnimation.cs" />
+    <Compile Include="LevelComponent\CoinBonus.cs" />
     <Compile Include="LevelComponent\FlowerBonus.cs" />
     <Compile Include="LevelComponent\MushroomBonus.cs" />
     <Compile Include="LevelComponent\PipeBlock.cs" />
