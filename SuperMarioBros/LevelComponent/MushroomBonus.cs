@@ -12,6 +12,7 @@ namespace SuperMarioBros.LevelComponent
         public MushroomBonus(bool oneUpBonus, Vector2 origin, Texture2D spriteSheet)
             : base(origin, spriteSheet)
         {
+            mPrimaryEvent = base.AlwaysMove;
             mIsOneUp = oneUpBonus;
             mHorizontalSpeed = new Speed(50);
             mHorizontalSpeed.mAllowNegativeSpeed = true;
@@ -29,33 +30,14 @@ namespace SuperMarioBros.LevelComponent
                 mDrawnRectangle = new Rectangle(new Point(80, 96), mSpriteSize);
             }
         }
-
         public override void Update(GameTime gameTime)
         {
-            if (!mStartAnimation)
-            {
-                mMovementInPixel = new Vector2(mHorizontalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f, mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
-
-                CollisionDetection();
-                if (mHorizontalCollision)
-                {
-                    mMovementInPixel.X = mHorizontalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-                }
-                if (mIsFalling)
-                {
-                    mVerticalSpeed.SlowDown();
-                }
-                else if (mVerticalSpeed.mCurrentSpeed != 0.0f)
-                {
-                    mVerticalSpeed.Stop();
-                    mMovementInPixel.Y = 0.0f;
-                }
-            }
-            else
-            {
-                PlayStartAnimation(gameTime);
-            }
             base.Update(gameTime);
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            base.Draw(spriteBatch);
         }
 
         public override void CollisionEffect(Obstacle obst, CollisionWay way)

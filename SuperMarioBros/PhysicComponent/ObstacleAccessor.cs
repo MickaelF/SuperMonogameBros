@@ -10,6 +10,7 @@ public sealed class ObstacleAccessor
 
     public Dictionary<int, Obstacle> mObstacleList;
     List<int> mDrawableObstacle;
+    public GameTime mGameTime;
 
     // Explicit static constructor to tell C# compiler
     // not to mark type as beforefieldinit

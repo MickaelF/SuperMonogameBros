@@ -16,6 +16,7 @@ namespace SuperMarioBros.LevelComponent
         private int mCrushedTimer;
         public Goomba(Point position)
         {
+            mPrimaryEvent = base.AlwaysMove;
             mCrushed = false;
             mHorizontalSpeed = new Speed(50);
             mHorizontalSpeed.mAllowNegativeSpeed = true;
@@ -51,22 +52,6 @@ namespace SuperMarioBros.LevelComponent
             }
             else
             {
-                mMovementInPixel = new Vector2(mHorizontalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f, mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
-
-                CollisionDetection();
-                if (mHorizontalCollision)
-                {
-                    mMovementInPixel.X = mHorizontalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-                }
-                if (mIsFalling)
-                {
-                    mVerticalSpeed.SlowDown();
-                }
-                else if (mVerticalSpeed.mCurrentSpeed != 0.0f)
-                {
-                    mVerticalSpeed.Stop();
-                    mMovementInPixel.Y = 0.0f;
-                }
                 base.Update(gameTime);
             }
         }

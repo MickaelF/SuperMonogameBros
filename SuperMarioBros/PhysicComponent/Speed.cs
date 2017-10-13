@@ -41,6 +41,8 @@ namespace SuperMarioBros.PhysicComponent
                 }
             }
         }
+        private bool _mInPositiveValue;
+        public bool mInPositiveValue { get => _mInPositiveValue; private set => _mInPositiveValue = value; }
 
         public bool mEvolveInPositiveNumber;
 
@@ -50,11 +52,11 @@ namespace SuperMarioBros.PhysicComponent
             mSpeedLimit = speedLimit;
             mAllowNegativeSpeed = false;
             mEvolveInPositiveNumber = true;
+            mInPositiveValue = true;
         }
         
         private void AugmentSpeed()
         {
-
             mCurrentSpeed = MathHelper.Clamp(mCurrentSpeed + mAcceleration, mSpeedMinimum, mSpeedLimit);
         }
 

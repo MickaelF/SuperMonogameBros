@@ -7,12 +7,11 @@ namespace SuperMarioBros.LevelComponent
 {
     public class Bonus : MovableObstacle
     {
-        protected bool mStartAnimation;
         private float mStartPositionY;
 
         public Bonus(Vector2 origin, Texture2D spriteSheet)
         {
-            mStartAnimation = true;
+            AddEventFront(PlayStartAnimation);
             mStartPositionY = origin.Y - 16.0f;
             mSpriteSheet = spriteSheet;
 
@@ -23,17 +22,19 @@ namespace SuperMarioBros.LevelComponent
 
         }
 
-        protected void PlayStartAnimation(GameTime gameTime)
+        protected bool PlayStartAnimation()
         {           
             if (mPosition.Y > mStartPositionY)
             {
-                mMovementInPixel = new Vector2(0.0f, 20 * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+                mMovementInPixel = new Vector2(0.0f, 20 * ObstacleAccessor.Instance.mGameTime.ElapsedGameTime.Milliseconds / 1000.0f);
             }
             else
             {
-                mStartAnimation = false;
                 mMovementInPixel = new Vector2(0.0f, 0.0f);
+                return true;
             }
+            mPosition = new Vector2(mPosition.X, mPosition.Y + mMoveVector.Y * mMovementInPixel.Y);
+            return false;
         }
 
     }

@@ -1,36 +1,91 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 
 namespace SuperMarioBros.PhysicComponent
 {
     public class Obstacle
     {
+        //! Next Id Value
         static int sNextId = 0;
+        //! Id of the obstacle. Cannot be changed. Only way to identify obstacles
         private int _cId;
 
+        //! Obstacle top-left position
         private Vector2 _mPosition;
+        //! Obstacle size
         private Vector2 _mSize;
+        //! Encapsulation of _cId
         public int cId { get => _cId; private set => _cId = value; }
+        //! Encapsulation of _mPosition
         public Vector2 mPosition { get => _mPosition; set => _mPosition = value; }
+        //! Encapsulation of _mSize
         public Vector2 mSize { get => _mSize; set => _mSize = value; }
+        //! Define if the obstacle is collidable or not. May be encapsulated (TO DO?)
         public bool mIsCollidable;
 
+        //! Declare delegate - required signature of Event func. Return true when the func have to be removed from the event list
+        public delegate bool Event();
+        //! Event called when there is no event in the event list
+        protected Event mPrimaryEvent;
+        //! Event list to call
+        private List<Event> mEventList;
+
+        //! From where the collision happen
         public enum CollisionWay
         {
             LEFT, RIGHT, ABOVE, BELOW
         }
 
-
         public Obstacle()
         {
             cId = sNextId++;
+            mEventList = new List<Event>();
             mIsCollidable = true;
             ObstacleAccessor.Instance.Add(this);
+            mPrimaryEvent = delegate { return true; };
         }
 
+        public void AddEventFront(Event e)
+        {
+            mEventList.Insert(0, e);
+        }
+
+        public void AddEvent(Event e)
+        {
+            mEventList.Add(e);
+        }
+        
+        public void RemoveEvent(Event e)
+        {
+            mEventList.Remove(e);
+        }
+
+        //! The effect of the collision. Must be override if there is special event linked to the collision.
         public virtual void CollisionEffect(Obstacle obst, CollisionWay way)
         {
         }
-              
+
+        public virtual void Update(GameTime gameTime)
+        {
+            if (mEventList.Count > 0)
+            {
+                if(mEventList[0]())
+                {
+                    mEventList.Remove(mEventList[0]);
+                }
+            }
+            else
+            {
+                mPrimaryEvent();
+            }
+        }
+
+        public bool DeleteObstacle()
+        {
+            ObstacleAccessor.Instance.Remove(cId);
+            return true;
+        }
+
 
         public bool Intersect(Obstacle other)
         {

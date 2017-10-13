@@ -58,8 +58,8 @@ namespace SuperMarioBros
             mUI.LoadContent(Content, graphics);
             mPlayer.mPosition = mLevelLoader.mMarioStartPosition;
             //mCamera.mViewportSize = new Point(240, 220);
-            mCamera.ZoomUp(1.0f);
-            mCamera.CenterOn(new Vector2(0, 0));            
+           // mCamera.ZoomUp(1.0f);
+            //mCamera.CenterOn(new Vector2(0, 0));            
         }
 
         /// <summary>
@@ -78,6 +78,7 @@ namespace SuperMarioBros
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            ObstacleAccessor.Instance.mGameTime = gameTime;
             if (mPlayer.mIsDead)
             {
                 mTimeRespawn += gameTime.ElapsedGameTime.Milliseconds;
@@ -91,7 +92,7 @@ namespace SuperMarioBros
             else
             {
                 mLevelLoader.Update(gameTime);
-                //mPlayer.Update(gameTime);
+                mPlayer.Update(gameTime);
                 if (mPlayer.mPosition.X > mCamera.mCenter.X + 120)
                 {
                     mCamera.Move(new Vector2(mPlayer.mPosition.X - mCamera.mCenter.X - 120, 0.0f));

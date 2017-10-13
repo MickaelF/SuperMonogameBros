@@ -76,6 +76,7 @@ namespace SuperMarioBros.DisplayComponent
 
         public Mario()
         {
+            mPrimaryEvent = Move;
             mMarioAnimationStepNumber = new List<int[]>();
             mMarioAnimationStepNumber.Add(new int[(int)AnimationName.NBANIMATION]);
             mMarioAnimationStepNumber[0][(int)AnimationName.IDLE] = 1;
@@ -179,12 +180,12 @@ namespace SuperMarioBros.DisplayComponent
 
         public void StateUp()
         {
-            mChangeStateAnimation = true;
+            AddEventFront(ChangeStateAnimation);
             mTimerTransition = 1000;
             mCurrentTransitionStep = 0;
             if (mMarioState == MarioState.SMALL)
             {
-            mPosition = new Vector2(mPosition.X, mPosition.Y - 16.0f);
+                mPosition = new Vector2(mPosition.X, mPosition.Y - 16.0f);
                 mNewState = MarioStateTransition.SMALL2BIG;
             }
             else if(mMarioState == MarioState.BIG)
@@ -203,13 +204,14 @@ namespace SuperMarioBros.DisplayComponent
                 mHorizontalSpeed.Stop();
                 LifeDown();
                 mMarioState = MarioState.DEAD;
+                AddEventFront(base.Jump);
             }
             else
             {
-                mChangeStateAnimation = true;
                 mCurrentTransitionStep = 0;
                 mTimerTransition = 1000;
                 mNewState = MarioStateTransition.HIGHER2SMALL;
+                AddEventFront(ChangeStateAnimation);
             }
         }
 
@@ -225,110 +227,55 @@ namespace SuperMarioBros.DisplayComponent
             mIndexDrawnSprite = (int)AnimationName.JUMP;
         }
 
-        public override void CollisionEffect(Obstacle obst, CollisionWay way)
-        {
-            if (obst.mIsCollidable && mIsCollidable)
+    
+        public override void Update(GameTime gameTime)
+        {            
+            CheckInput();
+            SetTimeBetweenAnimation((50 * mHorizontalSpeed.mSpeedLimit) / System.Math.Abs(mHorizontalSpeed.mCurrentSpeed));
+            if(mMarioState != MarioState.DEAD)
             {
-                if (way == CollisionWay.ABOVE || way == CollisionWay.BELOW)
-                {
-                    mVerticalSpeed.Stop();
-                }
-                else
-                {
-                    mHorizontalSpeed.Stop();
-                }
+                DefineCurrentAnimation();
             }
+            base.Update(gameTime);
         }
 
-        public override void Update(GameTime gameTime)
+        public bool ChangeStateAnimation()
         {
-            if (mMarioState == MarioState.DEAD)
+            ref GameTime gt = ref ObstacleAccessor.Instance.mGameTime;
+            if (mTimerTransition > 0)
             {
-                if (gameTime.ElapsedGameTime.Milliseconds != 0)
+                mMilliseconds += gt.ElapsedGameTime.Milliseconds;
+                if (mMilliseconds > 40)
                 {
-                    mMovementInPixel = new Vector2(mHorizontalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f, mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
-                }
-                mVerticalSpeed.SlowDown();
-                if(mPosition.Y > 600)
-                {
-                    mIsDead = true;
-                }
-                base.Update(gameTime);
-            }
-            else
-            {
-                if (mChangeStateAnimation)
-                {
-                    if (mTimerTransition > 0)
+                    mMilliseconds = 0;
+                    mCurrentTransitionStep++;
+                    if (mCurrentTransitionStep >= mMarioAnimationStepNumber[1][(int)mNewState])
                     {
-                        mMilliseconds += gameTime.ElapsedGameTime.Milliseconds;
-                        if (mMilliseconds > 40)
-                        {
-                            mMilliseconds = 0;
-                            mCurrentTransitionStep++;
-                            if (mCurrentTransitionStep >= mMarioAnimationStepNumber[1][(int)mNewState])
-                            {
-                                mCurrentTransitionStep = 0;
-                            }
-                            mDrawnRectangle = mMarioStateTransitionPosition[(int)mNewState][mCurrentTransitionStep];
-                        }
-                        mTimerTransition -= gameTime.ElapsedGameTime.Milliseconds;
+                        mCurrentTransitionStep = 0;
                     }
-                    else
-                    {
-                        mChangeStateAnimation = false;
-                        switch (mNewState)
-                        {
-                            case MarioStateTransition.SMALL2BIG:
-                                mMarioState = MarioState.BIG;
-                                mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
-                                break;
-                            case MarioStateTransition.BIG2FLOWER:
-                                mMarioState = MarioState.FLOWER;
-                                mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
-                                break;
-                        }
-                    }
+                    mDrawnRectangle = mMarioStateTransitionPosition[(int)mNewState][mCurrentTransitionStep];
                 }
-                else
-                {
-                    CheckInput();
-                    if (gameTime.ElapsedGameTime.Milliseconds != 0)
-                    {
-                        mMovementInPixel = new Vector2(mHorizontalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f, mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
-                    }
-                    SetTimeBetweenAnimation((50 * mHorizontalSpeed.mSpeedLimit) / System.Math.Abs(mHorizontalSpeed.mCurrentSpeed));
-                    CollisionDetection();
-                    if(mMarioState != MarioState.DEAD)
-                    {
-                        if (mDoJump)
-                        {
-                            mDoJump = false;
-                            mVerticalSpeed.SpeedToMax();
-                            mVerticalSpeed.mAcceleration = 50;
-                            mMovementInPixel.Y = mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-                            mIsFalling = true;
-                        }
-                        if (mIsFalling)
-                        {
-                            mVerticalSpeed.SlowDown();
-                            mIndexDrawnSprite = (int)AnimationName.JUMP;
-                        }
-                        else
-                        {
-                            mLastGoodPosition = mPosition;
-                        }
-                        DefineCurrentAnimation();
-                        base.Update(gameTime);
-                    }                    
-                }
+                mTimerTransition -= gt.ElapsedGameTime.Milliseconds;
+                return false;
             }
             
+            switch (mNewState)
+            {
+                case MarioStateTransition.SMALL2BIG:
+                    mMarioState = MarioState.BIG;
+                    mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
+                    break;
+                case MarioStateTransition.BIG2FLOWER:
+                    mMarioState = MarioState.FLOWER;
+                    mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
+                    break;
+            }
+            return true;
         }
 
         public void DefineCurrentAnimation()
         {
-            if(mIsFalling)
+            if(!mVerticalCollision)
             {
                 mIndexDrawnSprite = (int)AnimationName.JUMP;
             }
@@ -372,7 +319,6 @@ namespace SuperMarioBros.DisplayComponent
             }
         }
         
-
         public void CheckInput()
         {
             KeyboardState state = Keyboard.GetState();
@@ -463,18 +409,17 @@ namespace SuperMarioBros.DisplayComponent
 
             if (state.IsKeyDown(Keys.Space))
             {                
-                if (!mIsFalling && mOldKeyboardState.IsKeyUp(Keys.Space))
+                if (mVerticalCollision && mOldKeyboardState.IsKeyUp(Keys.Space))
                 {
-                    mDoJump = true;
+                    AddEvent(base.Jump);
                 }
-                else if (mIsFalling && mOldKeyboardState.IsKeyDown(Keys.Space)) {
+                else if (!mVerticalCollision && mOldKeyboardState.IsKeyDown(Keys.Space)) {
                     if (mVerticalSpeed.mAcceleration > 10 && mVerticalSpeed.mCurrentSpeed > 0.0f)
                     {
                         mVerticalSpeed.mAcceleration -= 10;
                     }
                 }
-            }
-            
+            }            
             mOldKeyboardState = state;
         }
     }

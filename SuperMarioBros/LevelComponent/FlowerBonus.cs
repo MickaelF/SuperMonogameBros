@@ -11,6 +11,7 @@ namespace SuperMarioBros.LevelComponent
             : base(origin, spriteSheet)
         {
             mSpriteSheet = spriteSheet;
+            mPrimaryEvent = delegate () { return false; };
             
             mDrawnRectangle = new Rectangle(new Point(80, 80), mSpriteSize);
             mAnimationStartArray = new Rectangle[1];
@@ -19,15 +20,6 @@ namespace SuperMarioBros.LevelComponent
             mSpriteAnimationStepNumber = new int[1];
             mSpriteAnimationStepNumber[0] = 3;
             SetTimeBetweenAnimation(50.0f);
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            if (mStartAnimation)
-            {
-                PlayStartAnimation(gameTime);
-            }
-            base.Update(gameTime);
         }
 
         public override void CollisionEffect(Obstacle obst, CollisionWay way)

@@ -21,6 +21,10 @@ namespace SuperMarioBros.LevelComponent
             else
             {                
                 mDrawnRectangle = new Rectangle(new Point(48, 128), mSpriteSize);
+                mIsCollidable = false;
+                mTopLeftStopFallPosition = mPosition;
+                AddEvent(JumpUntilPosition);
+                AddEvent(DeleteObstacle);
             }
             mAnimationStartArray = new Rectangle[1];
             mAnimationStartArray[0] = mDrawnRectangle;
@@ -34,23 +38,6 @@ namespace SuperMarioBros.LevelComponent
             mVerticalSpeed.mAllowNegativeSpeed = true;
             mVerticalSpeed.mEvolveInPositiveNumber = true;
             mVerticalSpeed.SpeedToMax();
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            if (mJumping)
-            {
-                if (mPosition.Y < mOrigin.Y)
-                {
-                    mMovementInPixel = new Vector2(0.0f, mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
-                    mVerticalSpeed.SlowDown();
-                }
-                else
-                {
-                    ObstacleAccessor.Instance.Remove(this);
-                }
-            }
-            base.Update(gameTime);
         }
     }
 }

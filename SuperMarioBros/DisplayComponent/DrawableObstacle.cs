@@ -29,6 +29,7 @@ namespace SuperMarioBros.DisplayComponent
         }
 
         public Vector2 mSpritePivotPoint { get => _mSpritePivotPoint; set => _mSpritePivotPoint = value; }
+        private int mStayAtZeroStepAnimation;
 
         //! Z-level of the drawable
         protected int mDepthLevel;
@@ -66,36 +67,46 @@ namespace SuperMarioBros.DisplayComponent
         //! Offset between animation step in sprite sheet. 
         public int mAnimationOffset;
 
+        //! Event called when there is no event in the event list
+        protected Event mPrimaryDrawEvent;
+
         public DrawableObstacle()
         {
             mScalling = 1.0f;
+            mStayAtZeroStepAnimation = 0;
             mMilliseconds = 0;
             mIsDisplayed = true;
             mSpritePivotPoint = Vector2.Zero;
             mDepthLevel = 0;
             mAnimationOffset = 0;
+            mPrimaryDrawEvent = Animate;
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            mPrimaryDrawEvent();
+            base.Update(gameTime);
         }
 
         public void SetTimeBetweenAnimation(float time)
         {
             mNextAnimationTimeLimit = time;
         }
-        
-        public virtual void Update(GameTime gameTime)
+
+        public bool Animate()
         {
-            mMilliseconds += gameTime.ElapsedGameTime.Milliseconds;
+            mMilliseconds += ObstacleAccessor.Instance.mGameTime.ElapsedGameTime.Milliseconds;
             if (mIsAnimated && mSpriteAnimationStepNumber[mIndexDrawnSprite] > 1 && mMilliseconds > mNextAnimationTimeLimit)
             {
                 mMilliseconds = 0;
-                mCurrentAnimationStepDrawn++; 
-                if(mCurrentAnimationStepDrawn >= mSpriteAnimationStepNumber[mIndexDrawnSprite])
-                {
-                    mCurrentAnimationStepDrawn = 0;
-                }
+                mCurrentAnimationStepDrawn = (mCurrentAnimationStepDrawn + 1 >= mSpriteAnimationStepNumber[mIndexDrawnSprite]) ? 0 : mCurrentAnimationStepDrawn + 1;
+
                 mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
                 mDrawnRectangle.X += mCurrentAnimationStepDrawn * (mSpriteSize.X + mAnimationOffset);
             }
+            return false;
         }
+
         public void TextureFaceLeft()
         {
             mIsHorizontalyFlipped = true;
@@ -124,6 +135,27 @@ namespace SuperMarioBros.DisplayComponent
             }
         }
 
+        public bool AnimationWithFirstSpriteShowingMoreTime()
+        {
+            mMilliseconds += ObstacleAccessor.Instance.mGameTime.ElapsedGameTime.Milliseconds;
+            if (mIsAnimated && mMilliseconds > mNextAnimationTimeLimit)
+            {
+                mMilliseconds = 0;
+                if (mStayAtZeroStepAnimation >= 4 || mCurrentAnimationStepDrawn != 0)
+                {
+                    mStayAtZeroStepAnimation = 0;
+                    mCurrentAnimationStepDrawn++;
+                    if (mCurrentAnimationStepDrawn >= mSpriteAnimationStepNumber[mIndexDrawnSprite])
+                    {
+                        mCurrentAnimationStepDrawn = 0;
+                    }
 
+                    mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
+                    mDrawnRectangle.X += mCurrentAnimationStepDrawn * mSpriteSize.X;
+                }
+                mStayAtZeroStepAnimation++;
+            }
+            return false;
+        }
     }
 }
