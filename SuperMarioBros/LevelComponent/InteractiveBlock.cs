@@ -14,7 +14,6 @@ namespace SuperMarioBros.LevelComponent
         private bool mCanCreateBonus;
         private Rectangle mEmptyBlockRectangleDrawing;
         private Vector2 mTopLeftOrigin;
-        private MovableObstacle mCoins;
                 
         public enum ITEM_TYPE
         {

@@ -10,6 +10,7 @@ namespace SuperMarioBros.DisplayComponent
         private string[] mFirstLine;
         private float mTimeLeft;
         private Texture2D mCoin;
+        private Texture2D mMarioSprite;
         private int mElapsedTime;
         private int mStopFirstFrameCoinAnimation;
 
@@ -37,11 +38,16 @@ namespace SuperMarioBros.DisplayComponent
             mFirstLine[3] = "Time";
             mTimeLeft = 400000;
             mFont = content.Load<SpriteFont>("font/UI");
+            mMarioSprite = content.Load<Texture2D>("Player-Start-Mark");
             mCoin = content.Load<Texture2D>("font/coin");
         }
 
         public virtual void Update(GameTime gameTime)
         {
+            if (mTimeLeft == -1)
+            {
+                mTimeLeft = 400000;
+            }
             mTimeLeft -= gameTime.ElapsedGameTime.Milliseconds;
             mElapsedTime += gameTime.ElapsedGameTime.Milliseconds;
             if (mElapsedTime > 100)
@@ -75,12 +81,21 @@ namespace SuperMarioBros.DisplayComponent
             secondLine[1] = "x" + mario.mNbCoins.ToString();
             secondLine[2] = "1-1";
             secondLine[3] = time.ToString();
+            if (mario.mIsDead)
+            {
+                secondLine[3] = "";
+                mTimeLeft = -1;
+                spriteBatch.Draw(mMarioSprite, cam.ScreenToWorldPosition(new Vector2(334, 200)), Color.White);
+                spriteBatch.DrawString(mFont, "x" + mario.mNbLife.ToString(), cam.ScreenToWorldPosition(new Vector2(370, 200)), Color.White);
+            }
             for (int i = 0; i < 4; ++i)
             {
                 spriteBatch.DrawString(mFont, secondLine[i], cam.ScreenToWorldPosition(new Vector2(mLineX[i], 30)), Color.White);
             }
             
             spriteBatch.Draw(mCoin, cam.ScreenToWorldPosition(new Vector2(mLineX[1] - 20, 30)), mDrawnRectangle, Color.White);
+
+            
         }
     }
 }

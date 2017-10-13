@@ -11,11 +11,12 @@ namespace SuperMarioBros.DisplayComponent
     {
         private bool mDoJump;
         private bool mDoCrouch;
+        public bool mIsDead;
         private KeyboardState mOldKeyboardState;
         public int mNbCoins;
         public int mScore;
         private MarioState _mMarioState;
-        private int mNbLife;
+        public int mNbLife;
         private List<Rectangle[]> mMarioSpritePosition;
         private List<int[]> mMarioAnimationStepNumber;
 
@@ -28,6 +29,8 @@ namespace SuperMarioBros.DisplayComponent
         private int mTimerTransition;
         private int mCurrentTransitionStep;
 
+        private Vector2 mLastGoodPosition;
+
         private AnimationName mRunningAnimationType;
 
         public MarioState mMarioState
@@ -38,6 +41,7 @@ namespace SuperMarioBros.DisplayComponent
                 _mMarioState = value;
                 mAnimationStartArray = mMarioSpritePosition[(int)value];
                 mSpriteSize = mMarioSpriteSize[(int)value];
+                mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
                 mSize = new Vector2(mSpriteSize.X, mSpriteSize.Y);
             }
         }
@@ -58,6 +62,8 @@ namespace SuperMarioBros.DisplayComponent
             SMALL = 0, 
             BIG, 
             FLOWER,
+            DEAD,
+            NBSTATES
         }
 
         private enum MarioStateTransition
@@ -86,7 +92,7 @@ namespace SuperMarioBros.DisplayComponent
             mSpriteAnimationStepNumber = mMarioAnimationStepNumber[0];
 
             mMarioSpritePosition = new List<Rectangle[]>();
-            mMarioSpriteSize = new Point[3];
+            mMarioSpriteSize = new Point[(int)MarioState.NBSTATES];
 
             mMarioSpritePosition.Add(new Rectangle[(int)AnimationName.NBANIMATION]);
             mMarioSpriteSize[(int)MarioState.SMALL] = new Point(16, 16);
@@ -110,6 +116,12 @@ namespace SuperMarioBros.DisplayComponent
             mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.SLOWDOWN] = new Rectangle(new Point(148, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
             mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.JUMP] = new Rectangle(new Point(165, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
             mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.CROUCH] = new Rectangle(new Point(182, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
+
+
+            mMarioSpriteSize[(int)MarioState.DEAD] = new Point(16, 16);
+            mMarioSpritePosition.Add(new Rectangle[1]);
+            mMarioSpritePosition[(int)MarioState.DEAD][(int)AnimationName.IDLE] = new Rectangle(new Point(182, 34), mMarioSpriteSize[(int)MarioState.SMALL]);
+
 
             mMarioStateTransitionPosition = new List<Rectangle[]>();
             mMarioStateTransitionPosition.Add(new Rectangle[mMarioAnimationStepNumber[1][(int)MarioStateTransition.SMALL2BIG]]);
@@ -147,6 +159,14 @@ namespace SuperMarioBros.DisplayComponent
             mDrawnRectangle = mAnimationStartArray[(int)AnimationName.IDLE];
         }
 
+        public void Restart()
+        {
+            mIsDead = false;
+            mPosition = mLastGoodPosition;
+            mMarioState = MarioState.SMALL;
+            ObstacleAccessor.Instance.Add(this);
+        }
+
         public void LifeUp()
         {
             mNbLife++;
@@ -177,7 +197,12 @@ namespace SuperMarioBros.DisplayComponent
         {
             if(mMarioState == MarioState.SMALL)
             {
-                // U ded bro
+                mIsCollidable = false;
+                mIndexDrawnSprite = (int)AnimationName.IDLE; 
+                mVerticalSpeed.SpeedToMax();
+                mHorizontalSpeed.Stop();
+                LifeDown();
+                mMarioState = MarioState.DEAD;
             }
             else
             {
@@ -202,7 +227,7 @@ namespace SuperMarioBros.DisplayComponent
 
         public override void CollisionEffect(Obstacle obst, CollisionWay way)
         {
-            if (!(obst is MushroomBonus || obst is FlowerBonus))
+            if (obst.mIsCollidable && mIsCollidable)
             {
                 if (way == CollisionWay.ABOVE || way == CollisionWay.BELOW)
                 {
@@ -217,60 +242,88 @@ namespace SuperMarioBros.DisplayComponent
 
         public override void Update(GameTime gameTime)
         {
-            if (mChangeStateAnimation)
+            if (mMarioState == MarioState.DEAD)
             {
-                if (mTimerTransition > 0)
-                {
-                    mMilliseconds += gameTime.ElapsedGameTime.Milliseconds;
-                    if(mMilliseconds > 40)
-                    {
-                        mMilliseconds = 0;
-                        mCurrentTransitionStep++;
-                        if(mCurrentTransitionStep >= mMarioAnimationStepNumber[1][(int)mNewState])
-                        {
-                            mCurrentTransitionStep = 0;
-                        }
-                        mDrawnRectangle = mMarioStateTransitionPosition[(int)mNewState][mCurrentTransitionStep];
-                    }
-                    mTimerTransition -= gameTime.ElapsedGameTime.Milliseconds;
-                }
-                else
-                {
-                    mChangeStateAnimation = false;
-                    switch(mNewState)
-                    {
-                        case MarioStateTransition.SMALL2BIG:
-                            mMarioState = MarioState.BIG;
-                            mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
-                            break;
-                    }
-                }
-            }
-            else
-            {
-                CheckInput();
                 if (gameTime.ElapsedGameTime.Milliseconds != 0)
                 {
                     mMovementInPixel = new Vector2(mHorizontalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f, mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
                 }
-                SetTimeBetweenAnimation((50 * mHorizontalSpeed.mSpeedLimit) / System.Math.Abs(mHorizontalSpeed.mCurrentSpeed));
-                CollisionDetection();
-                if (mDoJump)
+                mVerticalSpeed.SlowDown();
+                if(mPosition.Y > 600)
                 {
-                    mDoJump = false;
-                    mVerticalSpeed.SpeedToMax();
-                    mVerticalSpeed.mAcceleration = 50;
-                    mMovementInPixel.Y = mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-                    mIsFalling = true;
+                    mIsDead = true;
                 }
-                if (mIsFalling)
-                {
-                    mVerticalSpeed.SlowDown();
-                    mIndexDrawnSprite = (int)AnimationName.JUMP;
-                }
-                DefineCurrentAnimation();
                 base.Update(gameTime);
             }
+            else
+            {
+                if (mChangeStateAnimation)
+                {
+                    if (mTimerTransition > 0)
+                    {
+                        mMilliseconds += gameTime.ElapsedGameTime.Milliseconds;
+                        if (mMilliseconds > 40)
+                        {
+                            mMilliseconds = 0;
+                            mCurrentTransitionStep++;
+                            if (mCurrentTransitionStep >= mMarioAnimationStepNumber[1][(int)mNewState])
+                            {
+                                mCurrentTransitionStep = 0;
+                            }
+                            mDrawnRectangle = mMarioStateTransitionPosition[(int)mNewState][mCurrentTransitionStep];
+                        }
+                        mTimerTransition -= gameTime.ElapsedGameTime.Milliseconds;
+                    }
+                    else
+                    {
+                        mChangeStateAnimation = false;
+                        switch (mNewState)
+                        {
+                            case MarioStateTransition.SMALL2BIG:
+                                mMarioState = MarioState.BIG;
+                                mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
+                                break;
+                            case MarioStateTransition.BIG2FLOWER:
+                                mMarioState = MarioState.FLOWER;
+                                mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    CheckInput();
+                    if (gameTime.ElapsedGameTime.Milliseconds != 0)
+                    {
+                        mMovementInPixel = new Vector2(mHorizontalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f, mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+                    }
+                    SetTimeBetweenAnimation((50 * mHorizontalSpeed.mSpeedLimit) / System.Math.Abs(mHorizontalSpeed.mCurrentSpeed));
+                    CollisionDetection();
+                    if(mMarioState != MarioState.DEAD)
+                    {
+                        if (mDoJump)
+                        {
+                            mDoJump = false;
+                            mVerticalSpeed.SpeedToMax();
+                            mVerticalSpeed.mAcceleration = 50;
+                            mMovementInPixel.Y = mVerticalSpeed.mCurrentSpeed * gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+                            mIsFalling = true;
+                        }
+                        if (mIsFalling)
+                        {
+                            mVerticalSpeed.SlowDown();
+                            mIndexDrawnSprite = (int)AnimationName.JUMP;
+                        }
+                        else
+                        {
+                            mLastGoodPosition = mPosition;
+                        }
+                        DefineCurrentAnimation();
+                        base.Update(gameTime);
+                    }                    
+                }
+            }
+            
         }
 
         public void DefineCurrentAnimation()

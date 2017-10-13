@@ -24,6 +24,7 @@ namespace SuperMarioBros.LevelComponent
             Mushroom, 
             Stars,
             OneUp,
+            Goomba,
             End
         }
 
@@ -179,7 +180,7 @@ namespace SuperMarioBros.LevelComponent
                 case "BreakableBricks":
                     type = ObjectType.BreakableBricks;
                     break;
-                case "UnbreakableBricks-OW":
+                case "UnbreakableBrick-OW":
                     type = ObjectType.UnbreakableBricks;
                     break;
                 case "QuestionMarkBricks":
@@ -215,20 +216,27 @@ namespace SuperMarioBros.LevelComponent
                 case "OneUp":
                     type = ObjectType.OneUp;
                     break;
+                case "Goomba":
+                    type = ObjectType.Goomba;
+                    break;
+                default:
+                    break;
             }
             return type;
         }
 
         public void LoadContent(Microsoft.Xna.Framework.Content.ContentManager content, GraphicsDeviceManager graphics)
         {
-            Texture2D spriteSheet = content.Load<Texture2D>("UnTilableObjects-OW1");
-            mTextures[(int)ObjectType.BreakableBricks] = spriteSheet;
-            mTextures[(int)ObjectType.QuestionMarkBricks] = spriteSheet;
-            mTextures[(int)ObjectType.Pipe] = spriteSheet;
-            mTextures[(int)ObjectType.Clouds] = spriteSheet;
-            mTextures[(int)ObjectType.LargeHills] = spriteSheet;
-            mTextures[(int)ObjectType.SmallHills] = spriteSheet;
-            mTextures[(int)ObjectType.Bushes] = spriteSheet;
+            Texture2D untilableSheet = content.Load<Texture2D>("UnTilableObjects-OW1");
+            Texture2D enemiesSheet = content.Load<Texture2D>("Enemies");
+            mTextures[(int)ObjectType.BreakableBricks] = untilableSheet;
+            mTextures[(int)ObjectType.QuestionMarkBricks] = untilableSheet;
+            mTextures[(int)ObjectType.Pipe] = untilableSheet;
+            mTextures[(int)ObjectType.Clouds] = untilableSheet;
+            mTextures[(int)ObjectType.LargeHills] = untilableSheet;
+            mTextures[(int)ObjectType.SmallHills] = untilableSheet;
+            mTextures[(int)ObjectType.Bushes] = untilableSheet;
+            mTextures[(int)ObjectType.Goomba] = enemiesSheet;
             switch (mLevelContext)
             {
                 case LevelContext.OVERWORLD:
@@ -318,6 +326,17 @@ namespace SuperMarioBros.LevelComponent
                 BackgroundSprites lh = new BackgroundSprites(ObjectType.LargeHills, rect.Location);
                 lh.mSpriteSheet = mTextures[(int)ObjectType.LargeHills];
             }
+            foreach (Rectangle rect in mMapDictionary[ObjectType.Goomba])
+            {
+                Goomba g = new Goomba(rect.Location);
+                g.mSpriteSheet = mTextures[(int)ObjectType.Goomba];
+            }
+        }
+
+        public void Reload()
+        {
+            mObstacleAccessor.Clear();
+            Create();
         }
 
         public void Update(GameTime gameTime)
@@ -340,7 +359,6 @@ namespace SuperMarioBros.LevelComponent
             {
                 if (rect.Location == location)
                 {
-                    mMapDictionary[ObjectType.Coins].Remove(rect);
                     return InteractiveBlock.ITEM_TYPE.COIN;
                 }
             }
@@ -348,7 +366,6 @@ namespace SuperMarioBros.LevelComponent
             {
                 if (rect.Location == location)
                 {
-                    mMapDictionary[ObjectType.Stars].Remove(rect);
                     return InteractiveBlock.ITEM_TYPE.STAR;
                 }
             }
@@ -356,7 +373,6 @@ namespace SuperMarioBros.LevelComponent
             {
                 if (rect.Location == location)
                 {
-                    mMapDictionary[ObjectType.OneUp].Remove(rect);
                     return InteractiveBlock.ITEM_TYPE.ONE_UP;
                 }
             }
@@ -365,7 +381,6 @@ namespace SuperMarioBros.LevelComponent
             {
                 if (rect.Location == location)
                 {
-                    mMapDictionary[ObjectType.Mushroom].Remove(rect);
                     return InteractiveBlock.ITEM_TYPE.RED_MUSHROOM;
                 }
             }

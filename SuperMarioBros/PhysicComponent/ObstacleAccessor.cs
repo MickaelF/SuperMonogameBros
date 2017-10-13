@@ -72,4 +72,10 @@ public sealed class ObstacleAccessor
             }
         }
     }
+
+    public void Clear()
+    {
+        mDrawableObstacle.Clear();
+        mObstacleList.Clear();
+    }
 }

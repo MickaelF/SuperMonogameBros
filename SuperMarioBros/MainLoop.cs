@@ -21,6 +21,8 @@ namespace SuperMarioBros
         Color mClearColor;
         GameInfos mUI;
 
+        int mTimeRespawn;
+
         public MainLoop()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -76,13 +78,26 @@ namespace SuperMarioBros
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            mLevelLoader.Update(gameTime);
-            //mPlayer.Update(gameTime);
-            if(mPlayer.mPosition.X > mCamera.mCenter.X + 120)
+            if (mPlayer.mIsDead)
             {
-                 mCamera.Move(new Vector2(mPlayer.mPosition.X - mCamera.mCenter.X - 120, 0.0f));
+                mTimeRespawn += gameTime.ElapsedGameTime.Milliseconds;
+                if (mTimeRespawn > 2000)
+                {
+                    mLevelLoader.Reload();
+                    mPlayer.Restart();
+                    mTimeRespawn = 0;
+                }
             }
-            mUI.Update(gameTime);
+            else
+            {
+                mLevelLoader.Update(gameTime);
+                //mPlayer.Update(gameTime);
+                if (mPlayer.mPosition.X > mCamera.mCenter.X + 120)
+                {
+                    mCamera.Move(new Vector2(mPlayer.mPosition.X - mCamera.mCenter.X - 120, 0.0f));
+                }
+                mUI.Update(gameTime);
+            }
 
             base.Update(gameTime);
         }
@@ -93,10 +108,17 @@ namespace SuperMarioBros
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(mClearColor);
             Matrix mat = mCamera.mTranslationMatrix;
             spriteBatch.Begin(SpriteSortMode.BackToFront, null, SamplerState.PointWrap, null, null, null, mCamera.mTranslationMatrix);
-            mLevelLoader.Draw(spriteBatch);
+            if (!mPlayer.mIsDead)
+            {
+                GraphicsDevice.Clear(mClearColor);
+                mLevelLoader.Draw(spriteBatch);
+            }
+            else
+            {
+                GraphicsDevice.Clear(Color.Black);
+            }
             mUI.Draw(spriteBatch, ref mPlayer, ref mCamera);
             spriteBatch.End();
 

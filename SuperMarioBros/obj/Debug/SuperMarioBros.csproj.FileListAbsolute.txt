@@ -30,3 +30,5 @@ C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\obj\Debug\SuperMarioBros.
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\UI.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\font\UI.xnb
 C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\font\coin.xnb
+C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Enemies.xnb
+C:\Users\Mickael\Desktop\SuperMarioBros\SuperMarioBros\bin\DesktopGL\AnyCPU\Debug\Content\Player-Start-Mark.xnb
