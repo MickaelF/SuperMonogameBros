@@ -58,7 +58,7 @@ namespace SuperMarioBros
             mUI.LoadContent(Content, graphics);
             mPlayer.mPosition = mLevelLoader.mMarioStartPosition;
             //mCamera.mViewportSize = new Point(240, 220);
-           // mCamera.ZoomUp(1.0f);
+            mCamera.ZoomUp(1.0f);
             //mCamera.CenterOn(new Vector2(0, 0));            
         }
 
@@ -92,7 +92,6 @@ namespace SuperMarioBros
             else
             {
                 mLevelLoader.Update(gameTime);
-                mPlayer.Update(gameTime);
                 if (mPlayer.mPosition.X > mCamera.mCenter.X + 120)
                 {
                     mCamera.Move(new Vector2(mPlayer.mPosition.X - mCamera.mCenter.X - 120, 0.0f));

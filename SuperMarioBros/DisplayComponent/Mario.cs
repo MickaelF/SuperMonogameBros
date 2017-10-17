@@ -9,7 +9,6 @@ namespace SuperMarioBros.DisplayComponent
 {
     public class Mario : MovableObstacle
     {
-        private bool mDoJump;
         private bool mDoCrouch;
         public bool mIsDead;
         private KeyboardState mOldKeyboardState;
@@ -21,9 +20,8 @@ namespace SuperMarioBros.DisplayComponent
         private List<int[]> mMarioAnimationStepNumber;
 
         private Point[] mMarioSpriteSize;
-
-        // State transition animation variables
-        private bool mChangeStateAnimation;
+        private Vector2[] mBoundingBoxSize;
+        
         private MarioStateTransition mNewState;
         private List<Rectangle[]> mMarioStateTransitionPosition;
         private int mTimerTransition;
@@ -41,6 +39,7 @@ namespace SuperMarioBros.DisplayComponent
                 _mMarioState = value;
                 mAnimationStartArray = mMarioSpritePosition[(int)value];
                 mSpriteSize = mMarioSpriteSize[(int)value];
+                SetBoundingBoxSize(mBoundingBoxSize[(int)value]);
                 mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
                 mSize = new Vector2(mSpriteSize.X, mSpriteSize.Y);
             }
@@ -94,15 +93,18 @@ namespace SuperMarioBros.DisplayComponent
 
             mMarioSpritePosition = new List<Rectangle[]>();
             mMarioSpriteSize = new Point[(int)MarioState.NBSTATES];
+            mBoundingBoxSize = new Vector2[(int)MarioState.NBSTATES];
 
             mMarioSpritePosition.Add(new Rectangle[(int)AnimationName.NBANIMATION]);
             mMarioSpriteSize[(int)MarioState.SMALL] = new Point(16, 16);
+            mBoundingBoxSize[(int)MarioState.SMALL] = new Vector2(12, 16);
             mMarioSpritePosition[(int)MarioState.SMALL][(int)AnimationName.IDLE] = new Rectangle(new Point(80, 34), mMarioSpriteSize[(int)MarioState.SMALL]);
             mMarioSpritePosition[(int)MarioState.SMALL][(int)AnimationName.RUN] = new Rectangle(new Point(97, 34), mMarioSpriteSize[(int)MarioState.SMALL]);
             mMarioSpritePosition[(int)MarioState.SMALL][(int)AnimationName.SLOWDOWN] = new Rectangle(new Point(148, 34), mMarioSpriteSize[(int)MarioState.SMALL]);
             mMarioSpritePosition[(int)MarioState.SMALL][(int)AnimationName.JUMP] = new Rectangle(new Point(165, 34), mMarioSpriteSize[(int)MarioState.SMALL]);
 
             mMarioSpriteSize[(int)MarioState.BIG] = new Point(16, 32);
+            mBoundingBoxSize[(int)MarioState.BIG] = new Vector2(12, 32);
             mMarioSpritePosition.Add(new Rectangle[(int)AnimationName.NBANIMATION]);
             mMarioSpritePosition[(int)MarioState.BIG][(int)AnimationName.IDLE] = new Rectangle(new Point(80, 1), mMarioSpriteSize[(int)MarioState.BIG]);
             mMarioSpritePosition[(int)MarioState.BIG][(int)AnimationName.RUN] = new Rectangle(new Point(97, 1), mMarioSpriteSize[(int)MarioState.BIG]);
@@ -112,6 +114,7 @@ namespace SuperMarioBros.DisplayComponent
 
             mMarioSpritePosition.Add(new Rectangle[(int)AnimationName.NBANIMATION]);
             mMarioSpriteSize[(int)MarioState.FLOWER] = new Point(16, 32);
+            mBoundingBoxSize[(int)MarioState.FLOWER] = new Vector2(12, 32);
             mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.IDLE] = new Rectangle(new Point(80, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
             mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.RUN] = new Rectangle(new Point(97, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
             mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.SLOWDOWN] = new Rectangle(new Point(148, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
@@ -141,13 +144,12 @@ namespace SuperMarioBros.DisplayComponent
             }
 
             mIsAnimated = true;
-            mDoJump = false;
             mMarioState = MarioState.SMALL;
             mNbCoins = 0;
             mScore = 0;
             mMoveVector = new Vector2(1.0f, -1.0f);
             mNbLife = 3;
-
+            DefinePositionOffset(new Vector2(2, 0));
             mAnimationOffset = 1;
 
             mHorizontalSpeed = new Speed(100);
@@ -204,7 +206,7 @@ namespace SuperMarioBros.DisplayComponent
                 mHorizontalSpeed.Stop();
                 LifeDown();
                 mMarioState = MarioState.DEAD;
-                AddEventFront(base.Jump);
+                AddEventFront(Jump);
             }
             else
             {
@@ -411,7 +413,7 @@ namespace SuperMarioBros.DisplayComponent
             {                
                 if (mVerticalCollision && mOldKeyboardState.IsKeyUp(Keys.Space))
                 {
-                    AddEvent(base.Jump);
+                    AddEvent(Jump);
                 }
                 else if (!mVerticalCollision && mOldKeyboardState.IsKeyDown(Keys.Space)) {
                     if (mVerticalSpeed.mAcceleration > 10 && mVerticalSpeed.mCurrentSpeed > 0.0f)

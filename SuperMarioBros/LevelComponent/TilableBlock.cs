@@ -12,7 +12,8 @@ namespace SuperMarioBros.LevelComponent
             mDestinationRectangle = position;
             mPosition = new Vector2(position.Location.X, position.Location.Y);
             mSize = new Vector2(position.Width, position.Height);
-           
+            SetBoundingBoxSize(new Vector2(position.Width, position.Height));
+
             mIndexDrawnSprite = 0;
         }
 

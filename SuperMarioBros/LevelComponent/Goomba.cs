@@ -26,6 +26,7 @@ namespace SuperMarioBros.LevelComponent
             mVerticalSpeed.mAcceleration = 10;
             mSize = new Vector2(16.0f, 16.0f);
             mSpriteSize = new Point(16, 16);
+            SetBoundingBoxSize(new Vector2(16, 16));
             mPosition = new Vector2(position.X, position.Y);
 
             mSpriteAnimationStepNumber = new int[2];
@@ -71,15 +72,9 @@ namespace SuperMarioBros.LevelComponent
                         mCrushed = true;
                         mIndexDrawnSprite = (int)GoombaState.CRUSHED;
                         mIsCollidable = false;
-
+                        (obst as Mario).AddEvent((obst as Mario).Jump);
                         break;
-
                 }
-            }
-            else if (way == CollisionWay.LEFT || way == CollisionWay.RIGHT)
-            {
-                mHorizontalSpeed.mEvolveInPositiveNumber = !mHorizontalSpeed.mEvolveInPositiveNumber;
-                mHorizontalSpeed.SpeedToMax();
             }
         }
         public override void Draw(SpriteBatch spriteBatch)

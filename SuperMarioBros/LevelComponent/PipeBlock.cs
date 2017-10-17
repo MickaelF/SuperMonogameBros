@@ -14,6 +14,8 @@ namespace SuperMarioBros.LevelComponent
             mPosition = new Vector2(rect.Location.X, rect.Location.Y);
             mSize = new Vector2(rect.Width, rect.Height);
             mSpriteSize = new Point(32, 16);
+
+            SetBoundingBoxSize(new Vector2(rect.Width, rect.Height));
             mSpriteAnimationStepNumber = new int[1];
             mAnimationStartArray = new Rectangle[2];
 

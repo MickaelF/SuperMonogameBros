@@ -10,7 +10,6 @@ namespace SuperMarioBros.LevelComponent
         private bool mIsCollided;
         public ITEM_TYPE mContent;
         private bool mIsAQuestionMarkBlock;
-        private Rectangle mEmptyBlockRectangleDrawing;
                 
         public enum ITEM_TYPE
         {
@@ -41,6 +40,7 @@ namespace SuperMarioBros.LevelComponent
             mSpriteSize = new Point(16, 16);
             mPosition = new Vector2(position.Location.X, position.Location.Y);
             mSize = new Vector2(position.Width, position.Height);
+            SetBoundingBoxSize(new Vector2(16, 16));
             mSpriteAnimationStepNumber = new int[2];
             mAnimationStartArray = new Rectangle[2];
             Point positionSprite = new Point(16, 0);

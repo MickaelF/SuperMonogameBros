@@ -18,6 +18,7 @@ namespace SuperMarioBros.LevelComponent
             mMoveVector = new Vector2(1.0f, -1.0f);
             mPosition = new Vector2(origin.X, origin.Y);
             mSize = new Vector2(16.0f, 16.0f);
+            SetBoundingBoxSize(new Vector2(16, 16));
             mSpriteSize = new Point(16, 16);
 
         }

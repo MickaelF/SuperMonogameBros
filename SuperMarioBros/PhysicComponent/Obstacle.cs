@@ -3,6 +3,44 @@ using System.Collections.Generic;
 
 namespace SuperMarioBros.PhysicComponent
 {
+    public struct FRectangle
+    {
+    
+        public Vector2 mPosition;
+        public Vector2 mSize;
+
+        public FRectangle(float Xpos, float Ypos, float width, float height)
+        {
+            mPosition = new Vector2(Xpos, Ypos);
+            mSize = new Vector2(width, height);
+        }
+
+        public FRectangle(Vector2 pos, Vector2 size)
+        {
+            mPosition = pos;
+            mSize = size;
+        }
+
+        public bool Intersect(FRectangle other)
+        {
+            FRectangle rect = new FRectangle();
+            return Intersect(other, ref rect);
+        }
+
+        public bool Intersect(FRectangle other, ref FRectangle intersection)
+        {
+            float intersectionLeft = System.Math.Max(mPosition.X, other.mPosition.X);
+            float intersectionRight = System.Math.Min(mPosition.X + mSize.X, other.mPosition.X + other.mSize.X);
+            float intersectionTop = System.Math.Max(mPosition.Y, other.mPosition.Y);
+            float intersectionBottom = System.Math.Min(mPosition.Y + mSize.Y, other.mPosition.Y + other.mSize.Y);
+            if ((intersectionLeft < intersectionRight) && (intersectionTop < intersectionBottom))
+            {
+                intersection = new FRectangle(intersectionLeft, intersectionTop, intersectionRight - intersectionLeft, intersectionBottom - intersectionTop);
+                return true;
+            }
+            return false;
+        }
+    }
     public class Obstacle
     {
         //! Next Id Value
@@ -10,14 +48,24 @@ namespace SuperMarioBros.PhysicComponent
         //! Id of the obstacle. Cannot be changed. Only way to identify obstacles
         private int _cId;
 
-        //! Obstacle top-left position
+        //! Obstacle top-left position (for display)
         private Vector2 _mPosition;
-        //! Obstacle size
+        //! Obstacle size (for display)
         private Vector2 _mSize;
+        //! Bounding-box rectange (for collision)
+        private FRectangle _mBoundingBox;
         //! Encapsulation of _cId
         public int cId { get => _cId; private set => _cId = value; }
         //! Encapsulation of _mPosition
-        public Vector2 mPosition { get => _mPosition; set => _mPosition = value; }
+        public Vector2 mPosition
+        {
+            get => _mPosition;
+            set
+            {
+                _mBoundingBox.mPosition += (value - _mPosition);
+                _mPosition = value;
+            }
+        }
         //! Encapsulation of _mSize
         public Vector2 mSize { get => _mSize; set => _mSize = value; }
         //! Define if the obstacle is collidable or not. May be encapsulated (TO DO?)
@@ -43,6 +91,7 @@ namespace SuperMarioBros.PhysicComponent
             mIsCollidable = true;
             ObstacleAccessor.Instance.Add(this);
             mPrimaryEvent = delegate { return true; };
+            _mBoundingBox = new FRectangle();
         }
 
         public void AddEventFront(Event e)
@@ -60,6 +109,16 @@ namespace SuperMarioBros.PhysicComponent
             mEventList.Remove(e);
         }
 
+        public void SetBoundingBoxSize(Vector2 p)
+        {
+            _mBoundingBox.mSize = p;
+        }
+
+        public void DefinePositionOffset(Vector2 p)
+        {
+            _mBoundingBox.mPosition += p;
+        }
+
         //! The effect of the collision. Must be override if there is special event linked to the collision.
         public virtual void CollisionEffect(Obstacle obst, CollisionWay way)
         {
@@ -74,7 +133,7 @@ namespace SuperMarioBros.PhysicComponent
                     mEventList.Remove(mEventList[0]);
                 }
             }
-            else
+            if (mEventList.Count == 0)
             {
                 mPrimaryEvent();
             }
@@ -89,23 +148,15 @@ namespace SuperMarioBros.PhysicComponent
 
         public bool Intersect(Obstacle other)
         {
-            Rectangle rect = new Rectangle();
+            FRectangle rect = new FRectangle();
             return Intersect(other, ref rect);
         }
 
-        public bool Intersect(Obstacle other, ref Rectangle intersection)
+        public bool Intersect(Obstacle other, ref FRectangle intersection)
         {
             if (mIsCollidable && other != this)
             {
-                float intersectionLeft = System.Math.Max(mPosition.X, other.mPosition.X);
-                float intersectionRight = System.Math.Min(mPosition.X + mSize.X, other.mPosition.X + other.mSize.X);
-                float intersectionTop = System.Math.Max(mPosition.Y, other.mPosition.Y);
-                float intersectionBottom = System.Math.Min(mPosition.Y + mSize.Y, other.mPosition.Y + other.mSize.Y);
-                if ((intersectionLeft < intersectionRight) && (intersectionTop < intersectionBottom))
-                {
-                    intersection = new Rectangle((int)intersectionLeft, (int)intersectionTop, (int)(intersectionRight - intersectionLeft), (int)(intersectionBottom - intersectionTop));
-                    return true;
-                }
+                return _mBoundingBox.Intersect(other._mBoundingBox, ref intersection);
             }
             return false;
         }
