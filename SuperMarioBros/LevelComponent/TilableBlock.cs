@@ -15,6 +15,7 @@ namespace SuperMarioBros.LevelComponent
             SetBoundingBoxSize(new Vector2(position.Width, position.Height));
 
             mIndexDrawnSprite = 0;
+            //InitObstacle();
         }
 
         public override void Draw(SpriteBatch spriteBatch)

@@ -82,6 +82,7 @@ namespace SuperMarioBros.LevelComponent
             }
             mIndexDrawnSprite = 0;
             mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
+            //InitObstacle();
         }
 
         private bool CreateBonus()

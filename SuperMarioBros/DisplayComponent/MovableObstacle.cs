@@ -12,10 +12,10 @@ namespace SuperMarioBros.DisplayComponent
 
         //! Boolean indicating if obstacle is already jumping
         private bool mIsJumping;
-        //! Boolean indicating if obstacle is on the ground.
-        private bool mIsOnGround;
         //! Vector2 of the position to go before stopping the jump
-        protected Vector2 mTopLeftStopFallPosition;
+        public Vector2 mTopLeftStopFallPosition;
+        //! Minimum height to go before stopping the jump
+        public float mHeightMin;
 
         //! Encapsulation of _mMoveVector
         public Vector2 mMoveVector { get => _mMoveVector; set => _mMoveVector = value; }
@@ -37,7 +37,6 @@ namespace SuperMarioBros.DisplayComponent
             mVerticalSpeed = new Speed(0);
             mIsMovable = true;
             mIsJumping = false;
-            mIsOnGround = false;
         }
 
         public bool Move()
@@ -105,6 +104,31 @@ namespace SuperMarioBros.DisplayComponent
             return true;
         }
 
+        public bool JumpAboveHeight()
+        {
+            if (!mIsJumping)
+            {
+                mVerticalSpeed.SpeedToMax();
+                mIsJumping = true;
+                return false;
+            }
+            else
+            {
+                GameTime gt = ObstacleAccessor.Instance.mGameTime;
+                if (gt.ElapsedGameTime.Milliseconds != 0)
+                {
+                    mMovementInPixel = new Vector2(mHorizontalSpeed.mCurrentSpeed * gt.ElapsedGameTime.Milliseconds / 1000.0f, mVerticalSpeed.mCurrentSpeed * gt.ElapsedGameTime.Milliseconds / 1000.0f);
+                }
+                mPosition = new Vector2(mPosition.X + mMoveVector.X * mMovementInPixel.X, mPosition.Y + mMoveVector.Y * mMovementInPixel.Y);
+                mVerticalSpeed.SlowDown();
+                if(mPosition.Y > mHeightMin)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
+
         public bool JumpUntilPosition()
         {
             if (mTopLeftStopFallPosition != null)
@@ -153,7 +177,7 @@ namespace SuperMarioBros.DisplayComponent
                     FRectangle rect = new FRectangle();
                     foreach(Obstacle o in ObstacleAccessor.Instance.mObstacleList.Values)
                     {
-                        if (o != this)
+                        if (o != this && o.mIsCollidable)
                         {
                             if (Intersect(o, ref rect))
                             {
@@ -172,7 +196,7 @@ namespace SuperMarioBros.DisplayComponent
                     FRectangle rect = new FRectangle();
                     foreach (Obstacle o in ObstacleAccessor.Instance.mObstacleList.Values)
                     {
-                        if (o != this)
+                        if (o != this && o.mIsCollidable)
                         {
                             if (Intersect(o, ref rect))
                             {

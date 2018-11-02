@@ -51,8 +51,11 @@
     <Compile Include="LevelComponent\Bonus.cs" />
     <Compile Include="LevelComponent\BreakableBrickDestroyAnimation.cs" />
     <Compile Include="LevelComponent\CoinBonus.cs" />
+    <Compile Include="LevelComponent\Enemy.cs" />
+    <Compile Include="LevelComponent\FireballBonus.cs" />
     <Compile Include="LevelComponent\FlowerBonus.cs" />
     <Compile Include="LevelComponent\Goomba.cs" />
+    <Compile Include="LevelComponent\InvisibleWall.cs" />
     <Compile Include="LevelComponent\MushroomBonus.cs" />
     <Compile Include="LevelComponent\PipeBlock.cs" />
     <Compile Include="LevelComponent\TilableBlock.cs" />

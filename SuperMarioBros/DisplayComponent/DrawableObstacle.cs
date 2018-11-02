@@ -12,7 +12,8 @@ namespace SuperMarioBros.DisplayComponent
         public int[] mSpriteAnimationStepNumber { get => _mSpriteAnimationStepNumber; set => _mSpriteAnimationStepNumber = value; }
         public float mScalling { get => _mScalling; set => _mScalling = value; }
         public float mRotation { get => _mRotation; set => _mRotation = value; }
-        public bool mIsHorizontalyFlipped { get => _mIsHorizontalyFlipped; set => _mIsHorizontalyFlipped = value; }
+        public bool mIsHorizontalyFlipped { get => _mIsHorizontalyFlipped; private set => _mIsHorizontalyFlipped = value; }
+        public bool mIsVerticalyFlipped { get => _mIsVerticalyFlipped; private set => _mIsVerticalyFlipped = value; }
         public Point mSpriteSize { get => _mSpriteSize; set => _mSpriteSize = value; }
         public Texture2D mSpriteSheet { get => _mSpriteSheet; set => _mSpriteSheet = value; }
         protected float mNextAnimationTimeLimit { get => _mNextAnimationTimeLimit; private set => _mNextAnimationTimeLimit = value; }
@@ -35,8 +36,10 @@ namespace SuperMarioBros.DisplayComponent
         protected int mDepthLevel;
         //! If the object has an animation.
         private bool _mIsAnimated;
-        //! If the object is drawn reversed.
+        //! If the object is drawn horizontaly reversed.
         private bool _mIsHorizontalyFlipped;
+        //! If the object is drawn verticaly reversed.
+        private bool _mIsVerticalyFlipped;
         //! Currently drawn rectangle in the spite sheet.
         public Rectangle mDrawnRectangle;
         //! Index of the currently drawn sprite animation.
@@ -47,6 +50,7 @@ namespace SuperMarioBros.DisplayComponent
         protected int mCurrentAnimationStepDrawn;
         //! Array containing the start of different animation on the sprite sheet.
         private Rectangle[] _mAnimationStartArray;
+        private bool _mIsDisplayed;
 
         //! Time to surpass for the animation to trigger.
         private float _mNextAnimationTimeLimit;
@@ -61,7 +65,7 @@ namespace SuperMarioBros.DisplayComponent
         //! Milliseconds pass since last animation
         protected int mMilliseconds;
         //! If the block is meant to be displayed, true. False otherwise.
-        public bool mIsDisplayed;
+        public bool mIsDisplayed { get => _mIsDisplayed; private set => _mIsDisplayed = value; }
         //! Pivot point of the sprite (local coordinate)
         private Vector2 _mSpritePivotPoint;
         //! Offset between animation step in sprite sheet. 
@@ -93,6 +97,22 @@ namespace SuperMarioBros.DisplayComponent
             mNextAnimationTimeLimit = time;
         }
 
+        public void SetDisplayed(bool state)
+        {
+            mIsDisplayed = state;
+            if (mIsInitialized)
+            {
+                if (mIsDisplayed)
+                {
+                    ObstacleAccessor.Instance.AddDrawnObstacle(cId);
+                }
+                else
+                {
+                    ObstacleAccessor.Instance.RemoveDrawnObstacle(cId);
+                }
+            }            
+        }
+
         public bool Animate()
         {
             mMilliseconds += ObstacleAccessor.Instance.mGameTime.ElapsedGameTime.Milliseconds;
@@ -117,6 +137,11 @@ namespace SuperMarioBros.DisplayComponent
             mIsHorizontalyFlipped = false;
         }
 
+        public void TextureVerticalyReversed()
+        {
+            mIsVerticalyFlipped = !mIsVerticalyFlipped;
+        }
+
         public virtual void Draw(SpriteBatch spriteBatch)
         {
             if (mIsDisplayed)
@@ -126,6 +151,10 @@ namespace SuperMarioBros.DisplayComponent
                     if (mIsHorizontalyFlipped)
                     {
                         spriteBatch.Draw(mSpriteSheet, mPosition, mDrawnRectangle, Color.White, mRotation, mSpritePivotPoint, mScalling, SpriteEffects.FlipHorizontally, mDepthLevel);
+                    }
+                    else if (mIsVerticalyFlipped)
+                    {
+                        spriteBatch.Draw(mSpriteSheet, mPosition, mDrawnRectangle, Color.White, mRotation, mSpritePivotPoint, mScalling, SpriteEffects.FlipVertically, mDepthLevel);
                     }
                     else
                     {

@@ -54,11 +54,6 @@ namespace SuperMarioBros.LevelComponent
                     (obst as Mario).StateUp();
                 }
             }
-            else if (way == CollisionWay.LEFT || way == CollisionWay.RIGHT)
-            {
-                mHorizontalSpeed.mEvolveInPositiveNumber = !mHorizontalSpeed.mEvolveInPositiveNumber;
-                mHorizontalSpeed.SpeedToMax();
-            }
         }
     }
 }

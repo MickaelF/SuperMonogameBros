@@ -36,7 +36,6 @@ namespace SuperMarioBros.LevelComponent
             UNDERWATER
         }
        
-        private List<BackgroundSprites> mBackgroundSprite;
         private ObstacleAccessor mObstacleAccessor;
         public Vector2 mMarioStartPosition;
         private TMXParser mFileParser;
@@ -51,9 +50,7 @@ namespace SuperMarioBros.LevelComponent
             mFileParser = new TMXParser(mFilePath);
             mTextures = new Texture2D[(int)ObjectType.End];
             mObstacleAccessor = ObstacleAccessor.Instance;
-
-            mBackgroundSprite = new List<BackgroundSprites>();
-
+            
             if (mFileParser.mContextName == "Overworld")
             {
                 mLevelContext = LevelContext.OVERWORLD;
@@ -338,21 +335,7 @@ namespace SuperMarioBros.LevelComponent
             mObstacleAccessor.Clear();
             Create();
         }
-
-        public void Update(GameTime gameTime)
-        {
-            mObstacleAccessor.Update(gameTime);
-        }
-
-        public void Draw(SpriteBatch spriteBatch)
-        {
-            foreach (BackgroundSprites sprite in mBackgroundSprite)
-            {
-                sprite.Draw(spriteBatch);
-            }
-            mObstacleAccessor.Draw(spriteBatch);
-        }
-
+        
         private InteractiveBlock.ITEM_TYPE ContentInBlock(Point location)
         {
             foreach (Rectangle rect in mMapDictionary[ObjectType.Coins])

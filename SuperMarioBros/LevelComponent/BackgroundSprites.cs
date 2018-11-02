@@ -31,6 +31,8 @@ namespace SuperMarioBros.LevelComponent
                     mDrawnRectangle = new Rectangle(new Point(16, 192), mSpriteSize);
                     break;
             }
+            SetCollidable(false);
+            //InitObstacle();
         }
     }
 }

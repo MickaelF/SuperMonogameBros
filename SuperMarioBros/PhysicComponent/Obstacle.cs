@@ -4,8 +4,7 @@ using System.Collections.Generic;
 namespace SuperMarioBros.PhysicComponent
 {
     public struct FRectangle
-    {
-    
+    {    
         public Vector2 mPosition;
         public Vector2 mSize;
 
@@ -36,6 +35,16 @@ namespace SuperMarioBros.PhysicComponent
             if ((intersectionLeft < intersectionRight) && (intersectionTop < intersectionBottom))
             {
                 intersection = new FRectangle(intersectionLeft, intersectionTop, intersectionRight - intersectionLeft, intersectionBottom - intersectionTop);
+                return true;
+            }
+            return false;
+        }
+
+        public bool Contain(Vector2 position)
+        {
+            if (position.X >= mPosition.X && position.X <= mPosition.X + mSize.X 
+                && position.Y >= mPosition.Y && position.Y <= mPosition.Y + mSize.Y)
+            {
                 return true;
             }
             return false;
@@ -71,12 +80,24 @@ namespace SuperMarioBros.PhysicComponent
         //! Define if the obstacle is collidable or not. May be encapsulated (TO DO?)
         public bool mIsCollidable;
 
+        //! Define if the obstacle has been initialized.
+        protected bool _mIsInitialized;
+
+        public bool mIsInitialized { get => _mIsInitialized; protected set => _mIsInitialized = value; }
+
         //! Declare delegate - required signature of Event func. Return true when the func have to be removed from the event list
         public delegate bool Event();
         //! Event called when there is no event in the event list
         protected Event mPrimaryEvent;
         //! Event list to call
         private List<Event> mEventList;
+
+        //! Time elapsed since the beggining of the sleep event
+        private int mSleepEventTime;
+        //! Boolean indicating if a sleep event is currently running
+        private bool mIsSleeping;
+        //! Time limit for sleep event
+        public int mTimeSleeping;
 
         //! From where the collision happen
         public enum CollisionWay
@@ -89,9 +110,16 @@ namespace SuperMarioBros.PhysicComponent
             cId = sNextId++;
             mEventList = new List<Event>();
             mIsCollidable = true;
-            ObstacleAccessor.Instance.Add(this);
             mPrimaryEvent = delegate { return true; };
             _mBoundingBox = new FRectangle();
+            mIsInitialized = false;
+            mIsSleeping = false;
+            ObstacleAccessor.Instance.Add(this);
+        }
+
+        public void InitObstacle()
+        {
+            mIsInitialized = true;
         }
 
         public void AddEventFront(Event e)
@@ -114,7 +142,7 @@ namespace SuperMarioBros.PhysicComponent
             _mBoundingBox.mSize = p;
         }
 
-        public void DefinePositionOffset(Vector2 p)
+        public void DefineBBPositionOffset(Vector2 p)
         {
             _mBoundingBox.mPosition += p;
         }
@@ -145,6 +173,44 @@ namespace SuperMarioBros.PhysicComponent
             return true;
         }
 
+        public bool SleepEvent()
+        {
+            if (mIsSleeping)
+            {
+                mSleepEventTime += ObstacleAccessor.Instance.mGameTime.ElapsedGameTime.Milliseconds;
+                if (mSleepEventTime >= mTimeSleeping)
+                {
+                    mIsSleeping = false;
+                }
+            }
+            else
+            {
+                mIsSleeping = true;
+                mSleepEventTime = 0;
+            }
+            return !mIsSleeping;
+        }
+
+        public void SetCollidable(bool state)
+        {
+            mIsCollidable = state;
+            if (mIsInitialized)
+            {
+                if (mIsCollidable)
+                {
+                    ObstacleAccessor.Instance.AddPhysicalObstacle(cId);
+                }
+                else
+                {
+                    ObstacleAccessor.Instance.RemovePhysicalObstacle(cId);
+                }
+            }
+        }
+
+        public virtual bool CanCollide(Obstacle other)
+        {
+            return true;
+        }
 
         public bool Intersect(Obstacle other)
         {
@@ -152,13 +218,24 @@ namespace SuperMarioBros.PhysicComponent
             return Intersect(other, ref rect);
         }
 
+        public bool Intersect(FRectangle other)
+        {
+            FRectangle rect = new FRectangle();
+            return Intersect(other, ref rect);
+        }
+
         public bool Intersect(Obstacle other, ref FRectangle intersection)
         {
-            if (mIsCollidable && other != this)
+            if (other.CanCollide(this) && CanCollide(other))
             {
                 return _mBoundingBox.Intersect(other._mBoundingBox, ref intersection);
             }
             return false;
+        }
+        
+        public bool Intersect(FRectangle other, ref FRectangle intersection)
+        {
+            return _mBoundingBox.Intersect(other, ref intersection);
         }
 
         public bool Intersect(ref Ray2D ray)

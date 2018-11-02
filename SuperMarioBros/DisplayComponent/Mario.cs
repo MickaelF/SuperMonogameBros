@@ -11,6 +11,11 @@ namespace SuperMarioBros.DisplayComponent
     {
         private bool mDoCrouch;
         public bool mIsDead;
+
+        private bool mLaunchFireball;
+        private int mFireballAnimationFrames;
+        private int mFrameCount;
+
         private KeyboardState mOldKeyboardState;
         public int mNbCoins;
         public int mScore;
@@ -26,6 +31,8 @@ namespace SuperMarioBros.DisplayComponent
         private List<Rectangle[]> mMarioStateTransitionPosition;
         private int mTimerTransition;
         private int mCurrentTransitionStep;
+
+        private Texture2D mFireballTexture;
 
         private Vector2 mLastGoodPosition;
 
@@ -53,6 +60,7 @@ namespace SuperMarioBros.DisplayComponent
             SLOWDOWN,
             JUMP,
             CROUCH, 
+            FIREBALL,
             NBANIMATION
         }
 
@@ -120,6 +128,7 @@ namespace SuperMarioBros.DisplayComponent
             mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.SLOWDOWN] = new Rectangle(new Point(148, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
             mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.JUMP] = new Rectangle(new Point(165, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
             mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.CROUCH] = new Rectangle(new Point(182, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
+            mMarioSpritePosition[(int)MarioState.FLOWER][(int)AnimationName.FIREBALL] = new Rectangle(new Point(352, 129), mMarioSpriteSize[(int)MarioState.FLOWER]);
 
 
             mMarioSpriteSize[(int)MarioState.DEAD] = new Point(16, 16);
@@ -135,7 +144,10 @@ namespace SuperMarioBros.DisplayComponent
             mMarioStateTransitionPosition[(int)MarioStateTransition.SMALL2BIG][0] = new Rectangle(new Point(437, 1), mMarioSpriteSize[(int)MarioState.BIG]);
             mMarioStateTransitionPosition[(int)MarioStateTransition.SMALL2BIG][1] = new Rectangle(new Point(335, 1), mMarioSpriteSize[(int)MarioState.BIG]);
 
-            
+            mMarioStateTransitionPosition[(int)MarioStateTransition.HIGHER2SMALL][0] = new Rectangle(new Point(437, 1), mMarioSpriteSize[(int)MarioState.BIG]);
+            mMarioStateTransitionPosition[(int)MarioStateTransition.HIGHER2SMALL][1] = new Rectangle(new Point(335, 1), mMarioSpriteSize[(int)MarioState.BIG]);
+
+
             mMarioStateTransitionPosition[(int)MarioStateTransition.BIG2FLOWER][0] = new Rectangle(new Point(80, 1), mMarioSpriteSize[(int)MarioState.BIG]);
             int yPos = 66;
             for (int i = 0; i< mMarioAnimationStepNumber[1][(int)MarioStateTransition.BIG2FLOWER]; ++i, yPos += 63)
@@ -149,7 +161,7 @@ namespace SuperMarioBros.DisplayComponent
             mScore = 0;
             mMoveVector = new Vector2(1.0f, -1.0f);
             mNbLife = 3;
-            DefinePositionOffset(new Vector2(2, 0));
+            DefineBBPositionOffset(new Vector2(2, 0));
             mAnimationOffset = 1;
 
             mHorizontalSpeed = new Speed(100);
@@ -160,6 +172,11 @@ namespace SuperMarioBros.DisplayComponent
             mVerticalSpeed.mAllowNegativeSpeed = true;
 
             mDrawnRectangle = mAnimationStartArray[(int)AnimationName.IDLE];
+
+            mLaunchFireball = false;
+            mFireballAnimationFrames = 3;
+            mFrameCount = 0;
+            //InitObstacle();
         }
 
         public void Restart()
@@ -182,17 +199,20 @@ namespace SuperMarioBros.DisplayComponent
 
         public void StateUp()
         {
-            AddEventFront(ChangeStateAnimation);
-            mTimerTransition = 1000;
-            mCurrentTransitionStep = 0;
-            if (mMarioState == MarioState.SMALL)
+            if (mMarioState != MarioState.FLOWER)
             {
-                mPosition = new Vector2(mPosition.X, mPosition.Y - 16.0f);
-                mNewState = MarioStateTransition.SMALL2BIG;
-            }
-            else if(mMarioState == MarioState.BIG)
-            {
-                mNewState = MarioStateTransition.BIG2FLOWER;
+                AddEventFront(ChangeStateAnimation);
+                mTimerTransition = 1000;
+                mCurrentTransitionStep = 0;
+                if (mMarioState == MarioState.SMALL)
+                {
+                    mPosition = new Vector2(mPosition.X, mPosition.Y - 16.0f);
+                    mNewState = MarioStateTransition.SMALL2BIG;
+                }
+                else if (mMarioState == MarioState.BIG)
+                {
+                    mNewState = MarioStateTransition.BIG2FLOWER;
+                }
             }
         }
 
@@ -226,6 +246,7 @@ namespace SuperMarioBros.DisplayComponent
         public void LoadContent(Microsoft.Xna.Framework.Content.ContentManager content, GraphicsDeviceManager graphics)
         {
             mSpriteSheet = content.Load<Texture2D>("MarioSpriteSheet");
+            mFireballTexture = content.Load<Texture2D>("UnTilableObjects-OW1");
             mIndexDrawnSprite = (int)AnimationName.JUMP;
         }
 
@@ -265,23 +286,30 @@ namespace SuperMarioBros.DisplayComponent
             {
                 case MarioStateTransition.SMALL2BIG:
                     mMarioState = MarioState.BIG;
-                    mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
                     break;
                 case MarioStateTransition.BIG2FLOWER:
                     mMarioState = MarioState.FLOWER;
-                    mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
+                    break;
+                case MarioStateTransition.HIGHER2SMALL:
+                    mMarioState = MarioState.SMALL;
                     break;
             }
+
+            mDrawnRectangle = mAnimationStartArray[mIndexDrawnSprite];
             return true;
         }
 
         public void DefineCurrentAnimation()
         {
-            if(!mVerticalCollision)
+            if (mLaunchFireball)
+            {
+                mIndexDrawnSprite = (int)AnimationName.FIREBALL;
+            }
+            else if (!mVerticalCollision)
             {
                 mIndexDrawnSprite = (int)AnimationName.JUMP;
             }
-            else if(mDoCrouch && mMarioState != MarioState.SMALL)
+            else if (mDoCrouch && mMarioState != MarioState.SMALL)
             {
                 mIndexDrawnSprite = (int)AnimationName.CROUCH;
             }
@@ -294,7 +322,7 @@ namespace SuperMarioBros.DisplayComponent
                 else
                 {
                     mIndexDrawnSprite = (int)mRunningAnimationType;
-                    if(mRunningAnimationType != AnimationName.SLOWDOWN)
+                    if (mRunningAnimationType != AnimationName.SLOWDOWN)
                     {
                         if (mHorizontalSpeed.mCurrentSpeed > 0.0f)
                         {
@@ -326,6 +354,14 @@ namespace SuperMarioBros.DisplayComponent
             KeyboardState state = Keyboard.GetState();
 
             mDoCrouch = false;
+            if(mLaunchFireball)
+            {
+                if (mFrameCount++ > mFireballAnimationFrames)
+                {
+                    mLaunchFireball = false;
+                    mFrameCount = 0;
+                }
+            }
             bool moveButtonPressed = false;
             // Go Left
             if (state.IsKeyDown(Keys.Left) || state.IsKeyDown(Keys.Q))
@@ -402,6 +438,16 @@ namespace SuperMarioBros.DisplayComponent
             {
                 // Run
                 mHorizontalSpeed.DoubleSpeedLimit();
+                if (mMarioState == MarioState.FLOWER)
+                {
+                    Vector2 fireballPosition = mPosition;
+                    if (!mIsHorizontalyFlipped)
+                    {
+                        fireballPosition.X += 16.0f;
+                    }
+                    new FireballBonus(new Vector2(mPosition.X + 16.0f, mPosition.Y), mFireballTexture, !mIsHorizontalyFlipped);
+                    mLaunchFireball = true;
+                }
             }
             else if (state.IsKeyUp(Keys.LeftShift) && mOldKeyboardState.IsKeyDown(Keys.LeftShift))
             {

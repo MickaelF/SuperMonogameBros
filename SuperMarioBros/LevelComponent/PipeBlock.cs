@@ -37,6 +37,7 @@ namespace SuperMarioBros.LevelComponent
                     mAnimationStartArray[0] = new Rectangle(positionSprite, mSpriteSize);
                     break;
             }
+            //InitObstacle();
         }
 
         public override void Draw(SpriteBatch spriteBatch)

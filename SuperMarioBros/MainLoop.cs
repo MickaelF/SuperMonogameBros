@@ -57,9 +57,9 @@ namespace SuperMarioBros
             mPlayer.LoadContent(Content, graphics);
             mUI.LoadContent(Content, graphics);
             mPlayer.mPosition = mLevelLoader.mMarioStartPosition;
-            //mCamera.mViewportSize = new Point(240, 220);
+            mCamera.mViewportSize = new Point(240, 220);
             mCamera.ZoomUp(1.0f);
-            //mCamera.CenterOn(new Vector2(0, 0));            
+            mCamera.CenterOn(new Vector2(120, 50));            
         }
 
         /// <summary>
@@ -91,10 +91,13 @@ namespace SuperMarioBros
             }
             else
             {
-                mLevelLoader.Update(gameTime);
+                ObstacleAccessor.Instance.Update(gameTime);
                 if (mPlayer.mPosition.X > mCamera.mCenter.X + 120)
                 {
-                    mCamera.Move(new Vector2(mPlayer.mPosition.X - mCamera.mCenter.X - 120, 0.0f));
+                    Vector2 translation = new Vector2(mPlayer.mPosition.X - mCamera.mCenter.X - 120, 0.0f);
+                    mCamera.Move(translation);
+                    ObstacleAccessor.Instance.mInitialisationBoundingBox.mPosition += translation;
+                    ObstacleAccessor.Instance.mDeleteBoundingBox.mPosition += translation;
                 }
                 mUI.Update(gameTime);
             }
@@ -113,7 +116,7 @@ namespace SuperMarioBros
             if (!mPlayer.mIsDead)
             {
                 GraphicsDevice.Clear(mClearColor);
-                mLevelLoader.Draw(spriteBatch);
+                ObstacleAccessor.Instance.Draw(spriteBatch);
             }
             else
             {

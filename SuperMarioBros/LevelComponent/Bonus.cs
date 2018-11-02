@@ -20,7 +20,7 @@ namespace SuperMarioBros.LevelComponent
             mSize = new Vector2(16.0f, 16.0f);
             SetBoundingBoxSize(new Vector2(16, 16));
             mSpriteSize = new Point(16, 16);
-
+            //InitObstacle();
         }
 
         protected bool PlayStartAnimation()

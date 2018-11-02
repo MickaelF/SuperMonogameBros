@@ -10,7 +10,6 @@ namespace SuperMarioBros.LevelComponent
         public FlowerBonus(Vector2 origin, Texture2D spriteSheet)
             : base(origin, spriteSheet)
         {
-            mSpriteSheet = spriteSheet;
             mPrimaryEvent = delegate () { return false; };
             
             mDrawnRectangle = new Rectangle(new Point(80, 80), mSpriteSize);
@@ -22,12 +21,13 @@ namespace SuperMarioBros.LevelComponent
             SetTimeBetweenAnimation(50.0f);
         }
 
+
         public override void CollisionEffect(Obstacle obst, CollisionWay way)
         {
             if (obst is Mario)
             {
                 (obst as Mario).StateUp();
-                ObstacleAccessor.Instance.Remove(this);
+                AddEventFront(this.DeleteObstacle);
             }
         }
     }

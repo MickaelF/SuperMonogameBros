@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using SuperMarioBros.LevelComponent;
 
 namespace SuperMarioBros.DisplayComponent
 {
@@ -8,6 +9,7 @@ namespace SuperMarioBros.DisplayComponent
         public float mZoom { get; private set; }
         public float mRotation { get; private set; }
         public Point mViewportSize;
+        private InvisibleWall mWall;
 
         public Vector2 mViewportCenter
         {
@@ -33,6 +35,7 @@ namespace SuperMarioBros.DisplayComponent
         {
             mZoom = 1.0f;
             mRotation = 0.0f;
+            mWall = new InvisibleWall(new Vector2(-100.0f, 0.0f), new Vector2(100.0f, 1000.0f));
         }
 
         public void ZoomUp(float val)
@@ -48,6 +51,7 @@ namespace SuperMarioBros.DisplayComponent
         public void Move(Vector2 move)
         {
             mCenter += move;
+            mWall.Move(move);
         }
 
         public Vector2 WorldToScreenPosition(Vector2 worldPos)
